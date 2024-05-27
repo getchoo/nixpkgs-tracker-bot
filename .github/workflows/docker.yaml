@@ -1,0 +1,125 @@
+name: Docker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build image
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v6
+
+      - name: Build Docker image
+        id: build
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          nix build \
+            --fallback \
+            --print-build-logs \
+            .#container-"$ARCH"
+
+          # exit if no `result` from nix build
+          [ ! -L result ] && exit 1
+          echo "path=$(readlink -f ./result)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload image
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-${{ matrix.arch }}
+          path: ${{ steps.build.outputs.path }}
+          if-no-files-found: error
+          retention-days: 1
+
+  release-gate:
+    name: Docker Release Gate
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exit with error
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+
+  push:
+    name: Push image
+    needs: release-gate
+
+    if: github.event_name == 'push'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+
+    env:
+      REGISTRY: ghcr.io
+      USERNAME: ${{ github.actor }}
+
+    steps:
+      - name: Set image name
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download images
+        uses: actions/download-artifact@v4
+        with:
+          path: images
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USERNAME }}
+          password: ${{ github.token }}
+
+      - name: Push to registry
+        env:
+          TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        run: |
+          architectures=("x86_64" "aarch64")
+          for arch in "${architectures[@]}"; do
+            docker load < images/container-"$arch"/*.tar.gz
+            docker tag nixpkgs-tracker-bot:latest-"$arch" "$TAG"-"$arch"
+            docker push "$TAG"-"$arch"
+          done
+
+          docker manifest create "$TAG" \
+            --amend "$TAG"-x86_64 \
+            --amend "$TAG"-aarch64
+
+          docker manifest push "$TAG"

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run build
+        run: |
+          cargo build --locked --release
+
+  format-and-lint:
+    name: Format and lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+
+      - name: Run checks
+        run: |
+          nix flake check --print-build-logs --show-trace
+
+  release-gate:
+    name: CI Release gate
+    needs: [build, format-and-lint]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exit with error
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

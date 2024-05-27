@@ -1,0 +1,21 @@
+[package]
+name = "nixpkgs-tracker-bot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenvy = "0.15.7"
+eyre = "0.6.12"
+futures = "0.3.30"
+reqwest = { version = "0.12.4", default-features = false, features = ["charset", "http2", "rustls-tls", "json"] }
+serde = { version = "1.0.203", features = ["derive"] }
+serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.12.1", features = ["unstable_discord_api"] }
+tokio = { version = "1.37.0", features = [
+	"macros",
+	"rt-multi-thread",
+	"signal"
+] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
