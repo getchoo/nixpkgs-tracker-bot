@@ -9,7 +9,7 @@ mod http;
 fn init_logging() {
 	let fmt_layer = tracing_subscriber::fmt::layer().pretty();
 	let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
-		.unwrap_or_else(|_| "nixpkgs_discord_tracker=info,warn".into());
+		.unwrap_or_else(|_| "nixpkgs_tracker_bot=info,warn".into());
 
 	tracing_subscriber::registry()
 		.with(fmt_layer)
