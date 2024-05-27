@@ -113,10 +113,10 @@
       default = packages.nixpkgs-tracker-bot;
 
       static-x86_64 = mkStaticForArch "x86_64";
-      static-aarch64 = mkStaticForArch "aarch64";
+      static-arm64 = mkStaticForArch "aarch64";
 
       container-x86_64 = containerWith packages.static-x86_64;
-      container-aarch64 = containerWith packages.static-aarch64;
+      container-arm64 = containerWith packages.static-arm64;
     });
   };
 }
