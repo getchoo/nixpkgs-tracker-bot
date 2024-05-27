@@ -2,7 +2,8 @@ use super::{Error, HttpClientExt};
 
 use serde::Deserialize;
 
-const GITHUB_API: &str = "https://api.github.com";
+pub const GITHUB_URL: &str = "https://github.com";
+pub const GITHUB_API: &str = "https://api.github.com";
 
 /// Bad version of `/repos/{owner}/{repo}/{compare}/{ref}...{ref}`
 #[derive(Deserialize)]

@@ -1,7 +1,8 @@
-use crate::http::{Client, GithubClientExt};
+use crate::http::{Client, GithubClientExt, GITHUB_URL};
 
 use eyre::Result;
 use futures::future::try_join_all;
+use serenity::all::CreateEmbed;
 use serenity::builder::{CreateCommand, CreateCommandOption, CreateInteractionResponseFollowup};
 use serenity::model::application::{
 	CommandInteraction, CommandOptionType, InstallationContext, ResolvedOption, ResolvedValue,
@@ -111,7 +112,12 @@ pub async fn respond(ctx: &Context, http: &Client, command: &CommandInteraction)
 			}))
 			.await?;
 
-			CreateInteractionResponseFollowup::new().content(statuses.join("\n"))
+			let embed = CreateEmbed::new()
+				.title(format!("Nixpkgs PR #{} Status", *pr))
+				.url(format!("{GITHUB_URL}/{REPO_OWNER}/{REPO_NAME}/pull/{}", pr))
+				.description(statuses.join("\n"));
+
+			CreateInteractionResponseFollowup::new().embed(embed)
 		}
 	} else {
 		CreateInteractionResponseFollowup::new().content("Please provide a valid commit!")
