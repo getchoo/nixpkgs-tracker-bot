@@ -49,7 +49,6 @@
     });
 
     devShells = forAllSystems ({
-      lib,
       pkgs,
       system,
       ...
@@ -117,7 +116,7 @@
       static-aarch64 = mkStaticForArch "aarch64";
 
       container-x86_64 = containerWith packages.static-x86_64;
-      container-aarch64 = containerWith packages.container-aarch64;
+      container-aarch64 = containerWith packages.static-aarch64;
     });
   };
 }
