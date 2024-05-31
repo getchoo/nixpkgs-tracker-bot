@@ -2,7 +2,8 @@
   description = "A Discord app for tracking nixpkgs PRs";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     fenix = {
       url = "github:nix-community/fenix";
       inputs = {
@@ -10,6 +11,7 @@
         rust-analyzer-src.follows = "";
       };
     };
+
     flake-checks.url = "github:getchoo/flake-checks";
   };
 
