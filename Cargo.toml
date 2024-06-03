@@ -12,7 +12,7 @@ futures = "0.3.30"
 reqwest = { version = "0.12.4", default-features = false, features = ["charset", "http2", "rustls-tls", "json"] }
 serde = { version = "1.0.203", features = ["derive"] }
 serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.12.1", features = ["unstable_discord_api"] }
-tokio = { version = "1.37.0", features = [
+tokio = { version = "1.38.0", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal"
