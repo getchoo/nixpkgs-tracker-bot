@@ -203,8 +203,8 @@ dependencies = [
 
 [[package]]
 name = "command_attr"
-version = "0.5.1"
-source = "git+https://github.com/serenity-rs/serenity?branch=current#303bbb62bdd45860786190e248b59e800aac1c5a"
+version = "0.5.2"
+source = "git+https://github.com/serenity-rs/serenity?branch=current#c6571176e1c6cbcf991707effb41a86f7be9f3fb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1464,8 +1464,8 @@ dependencies = [
 
 [[package]]
 name = "serenity"
-version = "0.12.1"
-source = "git+https://github.com/serenity-rs/serenity?branch=current#303bbb62bdd45860786190e248b59e800aac1c5a"
+version = "0.12.2"
+source = "git+https://github.com/serenity-rs/serenity?branch=current#c6571176e1c6cbcf991707effb41a86f7be9f3fb"
 dependencies = [
  "arrayvec",
  "async-trait",
