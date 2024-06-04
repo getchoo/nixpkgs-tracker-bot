@@ -37,7 +37,7 @@ jobs:
         uses: cachix/install-nix-action@v27
 
       - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v6
+        uses: DeterminateSystems/magic-nix-cache-action@v7
 
       - name: Build Docker image
         id: build
