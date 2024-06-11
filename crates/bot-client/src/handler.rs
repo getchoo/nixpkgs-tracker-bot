@@ -1,23 +1,23 @@
-use crate::command;
+use crate::commands;
 
 use std::error::Error;
 
+use log::{debug, error, info, trace};
 use serenity::async_trait;
-use serenity::builder::{CreateEmbed, CreateInteractionResponse, CreateInteractionResponseMessage};
+use serenity::builder::{CreateEmbed, CreateInteractionResponseFollowup};
 use serenity::model::{
 	application::{Command, Interaction},
 	colour::Colour,
 	gateway::Ready,
 };
 use serenity::prelude::{Context, EventHandler};
-use tracing::{debug, error, info, instrument};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Handler;
 
 impl Handler {
 	async fn register_commands(&self, ctx: &Context) -> Result<(), Box<dyn Error>> {
-		let commands = command::to_vec();
+		let commands = commands::to_vec();
 		let commands_len = commands.len();
 		for command in commands {
 			Command::create_global_command(&ctx.http, command).await?;
@@ -30,13 +30,13 @@ impl Handler {
 
 #[async_trait]
 impl EventHandler for Handler {
-	#[instrument(skip_all)]
+	/// Dispatch our commands and try to handle errors from them
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
 		if let Interaction::Command(command) = interaction {
 			let command_name = &command.data.name;
-			debug!("Received command: {}", command_name);
+			trace!("Received command: {}", command_name);
 
-			if let Err(why) = command::dispatch(&ctx, &command).await {
+			if let Err(why) = commands::dispatch(&ctx, &command).await {
 				error!(
 					"Ran into an error while dispatching command {}:\n{why:?}",
 					command_name
@@ -46,17 +46,15 @@ impl EventHandler for Handler {
 					.title("An error occurred")
 					.description("Sorry about that!")
 					.color(Colour::RED);
-				let message = CreateInteractionResponseMessage::new().embed(embed);
-				let response = CreateInteractionResponse::Message(message);
+				let response = CreateInteractionResponseFollowup::new().embed(embed);
 
-				if let Err(why) = command.create_response(&ctx.http, response).await {
+				if let Err(why) = command.create_followup(&ctx.http, response).await {
 					error!("Ran into an error while trying to recover from an error!\n{why:?}");
 				}
 			}
 		}
 	}
 
-	#[instrument(skip_all)]
 	async fn ready(&self, ctx: Context, ready: Ready) {
 		info!("Connected as {}!", ready.user.name);
 

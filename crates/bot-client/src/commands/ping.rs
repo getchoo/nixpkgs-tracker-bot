@@ -1,14 +1,12 @@
-use eyre::Result;
+use crate::Error;
+
 use serenity::builder::{
 	CreateCommand, CreateInteractionResponse, CreateInteractionResponseMessage,
 };
 use serenity::model::application::{CommandInteraction, InstallationContext};
 use serenity::prelude::Context;
-use tracing::{instrument, trace};
 
-#[instrument]
-pub async fn respond(ctx: &Context, command: &CommandInteraction) -> Result<()> {
-	trace!("Responding to ping command");
+pub async fn respond(ctx: &Context, command: &CommandInteraction) -> Result<(), Error> {
 	let message = CreateInteractionResponseMessage::new().content("Pong!");
 	let response = CreateInteractionResponse::Message(message);
 	command.create_response(&ctx, response).await?;

@@ -1,0 +1,29 @@
+[package]
+name = "bot-client"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "The Discord client for nixpkgs-tracker-bot"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+bot-http = { workspace = true }
+git2 = { workspace = true, features = ["https"] }
+git-tracker = { workspace = true }
+log = { workspace = true }
+serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.12.1", features = ["unstable_discord_api"] }
+tokio = { workspace = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

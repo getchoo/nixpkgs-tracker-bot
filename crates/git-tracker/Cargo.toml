@@ -1,0 +1,27 @@
+[package]
+name = "git-tracker"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "A library that helps you track commits and branches in a Git repository"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+git2 = { workspace = true }
+log = { workspace = true }
+thiserror = "1.0.61"
+
+[lints.rust]
+async_fn_in_trait = "allow"
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

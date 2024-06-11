@@ -1,21 +1,22 @@
-[package]
-name = "nixpkgs-tracker-bot"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = [
+	"crates/bot",
+	"crates/bot-client",
+	"crates/bot-http",
+	"crates/git-tracker"
+]
+resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace.dependencies]
+bot = { path = "./crates/bot" }
+bot-client = { path = "./crates/bot-client" }
+bot-http = { path = "./crates/bot-http" }
+git-tracker = { path = "./crates/git-tracker" }
 
-[dependencies]
-dotenvy = "0.15.7"
-eyre = "0.6.12"
-futures = "0.3.30"
-reqwest = { version = "0.12.4", default-features = false, features = ["charset", "http2", "rustls-tls", "json"] }
-serde = { version = "1.0.203", features = ["derive"] }
-serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.12.1", features = ["unstable_discord_api"] }
+git2 = { version = "0.18.3", default-features = false }
+log = "0.4.21"
 tokio = { version = "1.38.0", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal"
 ] }
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }

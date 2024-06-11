@@ -1,0 +1,26 @@
+[package]
+name = "bot-http"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "The HTTP backend for nixpkgs-tracker-bot"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+log = { workspace = true }
+reqwest = { version = "0.12.4", default-features = false, features = ["charset", "http2", "rustls-tls", "json"] }
+serde = { version = "1.0.203", features = ["derive"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"
