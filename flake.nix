@@ -56,14 +56,11 @@
       ...
     }: let
       inputsFrom = [self.packages.${system}.nixpkgs-tracker-bot];
-      RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
     in {
       default = pkgs.mkShell {
-        inherit inputsFrom RUST_SRC_PATH;
-      };
+        inherit inputsFrom;
+        RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
 
-      full = pkgs.mkShell {
-        inherit inputsFrom RUST_SRC_PATH;
         packages = [
           pkgs.clippy
           pkgs.rustfmt
@@ -75,6 +72,14 @@
           pkgs.statix
 
           self.formatter.${system}
+        ];
+      };
+
+      ci = pkgs.mkShell {
+        inherit inputsFrom;
+        packages = [
+          pkgs.clippy
+          pkgs.rustfmt
         ];
       };
     });
