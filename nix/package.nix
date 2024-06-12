@@ -20,10 +20,7 @@ rustPlatform.buildRustPackage {
     ];
   };
 
-  cargoLock = {
-    lockFile = ../Cargo.lock;
-    allowBuiltinFetchGit = true;
-  };
+  cargoLock.lockFile = ../Cargo.lock;
 
   nativeBuildInputs = [pkg-config];
   buildInputs = [openssl];

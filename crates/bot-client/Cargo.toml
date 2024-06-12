@@ -14,7 +14,7 @@ bot-http = { workspace = true }
 git2 = { workspace = true, features = ["https"] }
 git-tracker = { workspace = true }
 log = { workspace = true }
-serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.12.1", features = ["unstable_discord_api"] }
+serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
 tokio = { workspace = true }
 
 [lints.rust]
