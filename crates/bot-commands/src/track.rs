@@ -38,17 +38,16 @@ fn collect_statuses_in<'a>(
 	let tracker = Tracker::from_path(repository_path)?;
 
 	// check to see what branches it's in
-	let status_results = branches
-		.into_iter()
-		.map(|branch_name| {
-			trace!("Checking for commit in {branch_name}");
-			let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
-			let has_pr = tracker.branch_contains_sha(&full_branch_name, commit_sha)?;
-			let status_string = to_status_string(branch_name, has_pr);
+	let mut status_results = vec![];
+	for branch_name in branches {
+		trace!("Checking for commit in {branch_name}");
+		let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
+		let has_pr = tracker.branch_contains_sha(&full_branch_name, commit_sha)?;
 
-			Ok(status_string)
-		})
-		.collect::<Result<Vec<String>, git_tracker::Error>>()?;
+		if has_pr {
+			status_results.push(to_status_string(branch_name, has_pr));
+		}
+	}
 
 	Ok(status_results)
 }
@@ -85,9 +84,8 @@ pub async fn respond(
 
 	// find out what commit our PR was merged in
 	let Some(commit_sha) = http.merge_commit_for(REPO_OWNER, REPO_NAME, pr_id).await? else {
-		let response = CreateInteractionResponseFollowup::new().content(
-			"Either this pull request hasn't been merged or it's very old. I can't track it",
-		);
+		let response = CreateInteractionResponseFollowup::new()
+			.content("It seems this pull request is very old. I can't track it");
 		command.create_followup(&ctx, response).await?;
 
 		return Ok(());
@@ -99,10 +97,16 @@ pub async fn respond(
 		config.nixpkgs_branches.iter(),
 	)?;
 
+	let embed_description: String = if status_results.is_empty() {
+		"It doesn't look like this PR has been merged yet!".to_string()
+	} else {
+		status_results.join("\n")
+	};
+
 	let embed = CreateEmbed::new()
 		.title(format!("Nixpkgs PR #{} Status", *pr))
 		.url(format!("{NIXPKGS_URL}/pull/{pr}"))
-		.description(status_results.join("\n"));
+		.description(embed_description);
 
 	let resp = CreateInteractionResponseFollowup::new().embed(embed);
 	command.create_followup(&ctx, resp).await?;
