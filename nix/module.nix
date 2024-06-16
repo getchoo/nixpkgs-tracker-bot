@@ -47,16 +47,26 @@ in {
         ${getExe cfg.package}
       '';
 
+      environment = {
+        # using `/var/lib/private` as we have `DynamicUser` enabled
+        BOT_NIXPKGS_PATH = "/var/lib/private/${config.systemd.services.nixpkgs-tracker-bot.serviceConfig.StateDirectory}/nixpkgs";
+      };
+
       serviceConfig = {
         Type = "simple";
         Restart = "on-failure";
 
         EnvironmentFile = mkIf (cfg.environmentFile != null) cfg.environmentFile;
 
-        # hardening
+        StateDirectory = "nixpkgs-tracker-bot";
+
+        # hardening settings
         DynamicUser = true;
+        LockPersonality = true;
+        MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
+        PrivateIPC = true;
         PrivateTmp = true;
         PrivateUsers = true;
         ProtectClock = true;
@@ -66,16 +76,16 @@ in {
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
+        ProtectProc = "invisible";
         ProtectSystem = "strict";
         RestrictNamespaces = "uts ipc pid user cgroup";
+        RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
         SystemCallFilter = [
           "@system-service"
-          "~@resources"
-          "~@privileged"
         ];
-        Umask = "0007";
+        UMask = "0077";
       };
     };
   };
