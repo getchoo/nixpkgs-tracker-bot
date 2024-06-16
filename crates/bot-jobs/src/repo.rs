@@ -3,10 +3,13 @@ use bot_error::Error;
 
 use std::{io::Write, path::Path};
 
-use git2::{FetchOptions, Remote, RemoteCallbacks, Repository};
-use log::{debug, trace, warn};
+use git2::{AutotagOption, FetchOptions, RemoteCallbacks, Repository};
+use log::{debug, info, trace, warn};
 
 pub const TTL_SECS: u64 = 60 * 5; // 5 minutes
+
+// much of this is shamelessly lifted from
+// https://github.com/rust-lang/git2-rs/blob/9a5c9706ff578c936be644dd1e8fe155bdc4d129/examples/pull.rs
 
 fn fetch_options<'a>() -> FetchOptions<'a> {
 	let mut remote_callbacks = RemoteCallbacks::new();
@@ -36,18 +39,15 @@ fn fetch_options<'a>() -> FetchOptions<'a> {
 	fetch_opts
 }
 
-fn download_remote<'a>(repository: &'a Repository, remote_name: &str) -> Result<Remote<'a>, Error> {
-	trace!("Downloading remote {remote_name}");
-	let mut remote = repository.find_remote(remote_name)?;
-	remote.download(&[] as &[&str], Some(&mut fetch_options()))?;
+fn update_refs_in(repository: &Repository) -> Result<(), Error> {
+	let mut remote = repository.find_remote(NIXPKGS_REMOTE)?;
+	// download all the refs
+	remote.download(&NIXPKGS_BRANCHES, Some(&mut fetch_options()))?;
 	remote.disconnect()?;
+	// and (hopefully) update what they refer to for later
+	remote.update_tips(None, true, AutotagOption::Auto, None)?;
 
-	Ok(remote)
-}
-
-fn fetch_refs(remote: &mut Remote, refs: &[&str]) -> Result<(), Error> {
-	trace!("Fetching refs: {refs:?}");
-	Ok(remote.fetch(refs, Some(&mut fetch_options()), None)?)
+	Ok(())
 }
 
 pub fn fetch_or_update_repository(path: &str) -> Result<(), Error> {
@@ -61,14 +61,14 @@ pub fn fetch_or_update_repository(path: &str) -> Result<(), Error> {
 			path.display()
 		);
 		Repository::clone(NIXPKGS_URL, path)?;
+		info!("Finished cloning to {}", path.display());
 
 		// bail early as we already have a fresh copy
 		return Ok(());
 	};
 
 	debug!("Updating repository at {}", path.display());
-	let mut remote = download_remote(&repository, NIXPKGS_REMOTE)?;
-	fetch_refs(&mut remote, &NIXPKGS_BRANCHES)?;
+	update_refs_in(&repository)?;
 	debug!("Finished updating!");
 
 	Ok(())
