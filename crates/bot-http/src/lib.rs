@@ -5,8 +5,10 @@ use serde::de::DeserializeOwned;
 
 mod github;
 mod model;
+mod teawie;
 
 pub use github::ClientExt as GithubClientExt;
+pub use teawie::ClientExt as TeawieClientExt;
 
 pub type Client = reqwest::Client;
 pub type Response = reqwest::Response;
