@@ -1,7 +1,8 @@
 use crate::{SharedConfig, SharedHttp};
 use bot_error::Error;
 
-use log::{debug, error, info, trace};
+use log::{debug, error, info, trace, warn};
+use serenity::all::CreateBotAuthParameters;
 use serenity::async_trait;
 use serenity::builder::{
 	CreateEmbed, CreateInteractionResponse, CreateInteractionResponseFollowup,
@@ -61,6 +62,15 @@ impl Handler {
 
 		Ok(())
 	}
+
+	async fn invite_link(ctx: &Context) {
+		if let Ok(invite_link) = CreateBotAuthParameters::new().auto_client_id(ctx).await {
+			let link = invite_link.build();
+			info!("You can install me as an app at {link}");
+		} else {
+			warn!("Couldn't figure out our own client ID! Something might be wrong");
+		}
+	}
 }
 
 #[async_trait]
@@ -92,6 +102,7 @@ impl EventHandler for Handler {
 
 	async fn ready(&self, ctx: Context, ready: Ready) {
 		info!("Connected as {}!", ready.user.name);
+		Handler::invite_link(&ctx).await;
 
 		if let Err(why) = self.register_commands(&ctx).await {
 			error!("Couldn't register commands!\n{why:?}");
