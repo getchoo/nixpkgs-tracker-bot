@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "bot-client"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bot-commands",
  "bot-config",
@@ -187,7 +187,7 @@ dependencies = [
 
 [[package]]
 name = "bot-commands"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bot-config",
  "bot-consts",
@@ -200,19 +200,19 @@ dependencies = [
 
 [[package]]
 name = "bot-config"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "bot-consts"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "bot-error"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "bot-http"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "log",
  "reqwest 0.12.4",
@@ -221,7 +221,7 @@ dependencies = [
 
 [[package]]
 name = "bot-jobs"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bot-config",
  "bot-consts",
@@ -641,7 +641,7 @@ checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
 name = "git-tracker"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "git2",
  "log",
@@ -1085,7 +1085,7 @@ dependencies = [
 
 [[package]]
 name = "nixpkgs-tracker-bot"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bot-client",
  "bot-error",
