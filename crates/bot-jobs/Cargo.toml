@@ -1,0 +1,29 @@
+[package]
+name = "bot-jobs"
+version = "0.2.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "Background jobs for nixpkgs-tracker-bot"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+bot-config = { workspace = true }
+bot-consts = { workspace = true }
+bot-error = { workspace = true }
+git2 = { workspace = true, features = ["https"] }
+log = { workspace = true }
+tokio = { workspace = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

@@ -1,6 +1,8 @@
 {
   lib,
   rustPlatform,
+  openssl,
+  pkg-config,
   version,
   lto ? true,
   optimizeSize ? false,
@@ -12,16 +14,16 @@ rustPlatform.buildRustPackage {
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [
-      ../src
+      (lib.fileset.gitTracked ../crates)
       ../Cargo.toml
       ../Cargo.lock
     ];
   };
 
-  cargoLock = {
-    lockFile = ../Cargo.lock;
-    allowBuiltinFetchGit = true;
-  };
+  cargoLock.lockFile = ../Cargo.lock;
+
+  nativeBuildInputs = [pkg-config];
+  buildInputs = [openssl];
 
   env = let
     toRustFlags = lib.mapAttrs' (

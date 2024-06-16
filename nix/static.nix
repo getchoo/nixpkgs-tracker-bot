@@ -1,16 +1,15 @@
 {
   lib,
-  arch,
-  nixpkgs-tracker-bot,
   fenix,
   pkgsCross,
+  nixpkgs-tracker-bot,
 }: let
-  crossTargetFor = with pkgsCross; {
+  crossPkgsFor = with pkgsCross; {
     x86_64 = musl64.pkgsStatic;
     aarch64 = aarch64-multiplatform;
   };
 
-  rustcTargetFor = lib.mapAttrs (lib.const (pkgs: pkgs.stdenv.hostPlatform.rust.rustcTarget)) crossTargetFor;
+  rustcTargetFor = lib.mapAttrs (lib.const (pkgs: pkgs.stdenv.hostPlatform.rust.rustcTarget)) crossPkgsFor;
   rustStdFor = lib.mapAttrs (lib.const (rustcTarget: fenix.targets.${rustcTarget}.stable.rust-std)) rustcTargetFor;
 
   toolchain = with fenix;
@@ -26,9 +25,11 @@
           lib.genAttrs ["cargo" "rustc"] (lib.const toolchain)
         ))
     )
-    crossTargetFor;
+    crossPkgsFor;
 in
-  nixpkgs-tracker-bot.override {
-    rustPlatform = crossPlatformFor.${arch};
-    optimizeSize = true;
-  }
+  {arch}:
+    nixpkgs-tracker-bot.override {
+      rustPlatform = crossPlatformFor.${arch};
+      inherit (crossPkgsFor.${arch}) openssl;
+      optimizeSize = true;
+    }

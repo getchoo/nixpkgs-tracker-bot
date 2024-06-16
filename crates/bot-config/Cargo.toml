@@ -1,0 +1,23 @@
+[package]
+name = "bot-config"
+version = "0.2.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "Configuration for nixpkgs-tracker-bot"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

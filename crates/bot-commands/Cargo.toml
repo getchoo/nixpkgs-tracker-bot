@@ -1,0 +1,34 @@
+[package]
+name = "bot-commands"
+version = "0.2.0"
+edition = "2021"
+
+authors = ["seth <getchoo at tuta dot io>"]
+description = "Discord application commands for nixpkgs-tracker-bot"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+
+publish = false
+
+[dependencies]
+bot-config = { workspace = true }
+bot-consts = { workspace = true }
+bot-error = { workspace = true }
+bot-http = { workspace = true }
+git-tracker = { workspace = true }
+log = { workspace = true }
+serenity = { workspace = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"
+# NOTE: THIS ISN'T IN OTHER CRATES BUT IS HERE
+# this is because we don't really care about error docs here
+# and it could mess with poise's comment system in the future :p
+missing-errors-doc = "allow"

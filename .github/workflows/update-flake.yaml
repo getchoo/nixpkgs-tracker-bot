@@ -9,7 +9,6 @@ on:
 jobs:
   update:
     name: Run update
-
     runs-on: ubuntu-latest
 
     permissions:
@@ -21,12 +20,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: cachix/install-nix-action@v27
+        uses: DeterminateSystems/nix-installer-action@v12
 
-      - name: Update lockfile & make PR
+      - name: Update flake.lock & make PR
         uses: DeterminateSystems/update-flake-lock@v22
-        id: update
         with:
-          commit-msg: 'nix: update flake.lock'
-          pr-title: 'nix: update flake.lock'
-          token: ${{ github.token }}
+          commit-msg: "nix: update flake.lock"
+          pr-title: "nix: update flake.lock"

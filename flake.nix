@@ -2,7 +2,8 @@
   description = "A Discord app for tracking nixpkgs PRs";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     fenix = {
       url = "github:nix-community/fenix";
       inputs = {
@@ -10,6 +11,7 @@
         rust-analyzer-src.follows = "";
       };
     };
+
     flake-checks.url = "github:getchoo/flake-checks";
   };
 
@@ -54,14 +56,11 @@
       ...
     }: let
       inputsFrom = [self.packages.${system}.nixpkgs-tracker-bot];
-      RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
     in {
       default = pkgs.mkShell {
-        inherit inputsFrom RUST_SRC_PATH;
-      };
+        inherit inputsFrom;
+        RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
 
-      full = pkgs.mkShell {
-        inherit inputsFrom RUST_SRC_PATH;
         packages = [
           pkgs.clippy
           pkgs.rustfmt
@@ -73,6 +72,14 @@
           pkgs.statix
 
           self.formatter.${system}
+        ];
+      };
+
+      ci = pkgs.mkShell {
+        inherit inputsFrom;
+        packages = [
+          pkgs.clippy
+          pkgs.rustfmt
         ];
       };
     });
@@ -89,12 +96,10 @@
     }: let
       packages = self.packages.${system};
 
-      mkStaticForArch = arch:
-        pkgs.callPackage ./nix/static.nix {
-          inherit arch;
-          inherit (packages) nixpkgs-tracker-bot;
-          fenix = fenix.packages.${system};
-        };
+      mkStaticWith = pkgs.callPackage ./nix/static.nix {
+        inherit (packages) nixpkgs-tracker-bot;
+        fenix = fenix.packages.${system};
+      };
 
       containerWith = nixpkgs-tracker-bot: let
         arch = nixpkgs-tracker-bot.stdenv.hostPlatform.ubootArch;
@@ -112,8 +117,8 @@
 
       default = packages.nixpkgs-tracker-bot;
 
-      static-x86_64 = mkStaticForArch "x86_64";
-      static-arm64 = mkStaticForArch "aarch64";
+      static-x86_64 = mkStaticWith {arch = "x86_64";};
+      static-arm64 = mkStaticWith {arch = "aarch64";};
 
       container-x86_64 = containerWith packages.static-x86_64;
       container-arm64 = containerWith packages.static-arm64;
