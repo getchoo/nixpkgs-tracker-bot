@@ -1,4 +1,4 @@
-use bot_consts::{NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_consts::{NIXPKGS_REMOTE, NIXPKGS_URL};
 use bot_error::Error;
 
 use std::{io::Write, path::Path};
@@ -39,10 +39,10 @@ fn fetch_options<'a>() -> FetchOptions<'a> {
 	fetch_opts
 }
 
-fn update_refs_in(repository: &Repository) -> Result<(), Error> {
+fn update_branches_in(repository: &Repository, branches: &[String]) -> Result<(), Error> {
 	let mut remote = repository.find_remote(NIXPKGS_REMOTE)?;
 	// download all the refs
-	remote.download(&NIXPKGS_BRANCHES, Some(&mut fetch_options()))?;
+	remote.download(branches, Some(&mut fetch_options()))?;
 	remote.disconnect()?;
 	// and (hopefully) update what they refer to for later
 	remote.update_tips(None, true, AutotagOption::Auto, None)?;
@@ -50,7 +50,7 @@ fn update_refs_in(repository: &Repository) -> Result<(), Error> {
 	Ok(())
 }
 
-pub fn fetch_or_update_repository(path: &str) -> Result<(), Error> {
+pub fn fetch_or_update_repository(path: &str, branches: &[String]) -> Result<(), Error> {
 	// Open our repository or clone it if it doesn't exist
 	let path = Path::new(path);
 	let repository = if path.exists() {
@@ -68,7 +68,7 @@ pub fn fetch_or_update_repository(path: &str) -> Result<(), Error> {
 	};
 
 	debug!("Updating repository at {}", path.display());
-	update_refs_in(&repository)?;
+	update_branches_in(&repository, branches)?;
 	debug!("Finished updating!");
 
 	Ok(())

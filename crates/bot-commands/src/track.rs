@@ -1,5 +1,5 @@
 use bot_config::Config;
-use bot_consts::{NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_consts::{NIXPKGS_REMOTE, NIXPKGS_URL};
 use bot_error::Error;
 use bot_http::{self as http, GithubClientExt};
 use git_tracker::Tracker;
@@ -29,17 +29,17 @@ fn to_status_string(branch_name: &str, has_pr: bool) -> String {
 /// Will return `Err` if we can't start tracking a repository at the given path,
 /// the commit SHA cannot be found, or if we can't determine if the branch has given
 /// commit
-fn collect_statuses_in(
+fn collect_statuses_in<'a>(
 	repository_path: &str,
 	commit_sha: &str,
-	branches: &[&str],
+	branches: impl IntoIterator<Item = &'a String>,
 ) -> Result<Vec<String>, Error> {
 	// start tracking nixpkgs
 	let tracker = Tracker::from_path(repository_path)?;
 
 	// check to see what branches it's in
 	let status_results = branches
-		.iter()
+		.into_iter()
 		.map(|branch_name| {
 			trace!("Checking for commit in {branch_name}");
 			let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
@@ -93,7 +93,11 @@ pub async fn respond(
 		return Ok(());
 	};
 
-	let status_results = collect_statuses_in(&config.nixpkgs_path, &commit_sha, &NIXPKGS_BRANCHES)?;
+	let status_results = collect_statuses_in(
+		&config.nixpkgs_path,
+		&commit_sha,
+		config.nixpkgs_branches.iter(),
+	)?;
 
 	let embed = CreateEmbed::new()
 		.title(format!("Nixpkgs PR #{} Status", *pr))
