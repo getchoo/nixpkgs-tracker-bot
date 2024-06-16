@@ -96,12 +96,10 @@
     }: let
       packages = self.packages.${system};
 
-      mkStaticForArch = arch:
-        pkgs.callPackage ./nix/static.nix {
-          inherit arch;
-          inherit (packages) nixpkgs-tracker-bot;
-          fenix = fenix.packages.${system};
-        };
+      mkStaticWith = pkgs.callPackage ./nix/static.nix {
+        inherit (packages) nixpkgs-tracker-bot;
+        fenix = fenix.packages.${system};
+      };
 
       containerWith = nixpkgs-tracker-bot: let
         arch = nixpkgs-tracker-bot.stdenv.hostPlatform.ubootArch;
@@ -119,8 +117,8 @@
 
       default = packages.nixpkgs-tracker-bot;
 
-      static-x86_64 = mkStaticForArch "x86_64";
-      static-arm64 = mkStaticForArch "aarch64";
+      static-x86_64 = mkStaticWith {arch = "x86_64";};
+      static-arm64 = mkStaticWith {arch = "aarch64";};
 
       container-x86_64 = containerWith packages.static-x86_64;
       container-arm64 = containerWith packages.static-arm64;
