@@ -35,12 +35,12 @@ fn token() -> Result<String, Error> {
 ///
 /// # Errors
 ///
-/// Will return `Err` if a [`Client`] cannot be created or configuration
+/// Will return [`Err`] if a [`Client`] cannot be created or configuration
 /// cannot be created from the environment.
 ///
 /// # Panics
 ///
-/// Will `panic!` if the bot token isn't found or the ctrl+c handler can't be made
+/// Will [`panic!`] if the bot token isn't found or the ctrl+c handler can't be made
 pub async fn get() -> Result<Client, Error> {
 	let token = token().expect("Couldn't find token in environment! Is DISCORD_BOT_TOKEN set?");
 

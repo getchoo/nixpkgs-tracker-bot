@@ -15,20 +15,13 @@ use serenity::prelude::Context;
 const REPO_OWNER: &str = "NixOS";
 const REPO_NAME: &str = "nixpkgs";
 
-/// Make a nice friendly string displaying if this branch has a PR merged into it
-fn to_status_string(branch_name: &str, has_pr: bool) -> String {
-	let emoji = if has_pr { "✅" } else { "❌" };
-	format!("`{branch_name}` {emoji}")
-}
-
 /// Collect the status of the commit SHA [`commit_sha`] in each of the nixpkgs
 /// branches in [`branches`], using the repository at path [`repository_path`]
 ///
 /// # Errors
 ///
-/// Will return `Err` if we can't start tracking a repository at the given path,
-/// the commit SHA cannot be found, or if we can't determine if the branch has given
-/// commit
+/// Will return [`Err`] if we can't start tracking a repository at the given path,
+/// or if we can't determine if the branch has given commit
 fn collect_statuses_in<'a>(
 	repository_path: &str,
 	commit_sha: &str,
@@ -45,7 +38,7 @@ fn collect_statuses_in<'a>(
 		let has_pr = tracker.branch_contains_sha(&full_branch_name, commit_sha)?;
 
 		if has_pr {
-			status_results.push(to_status_string(branch_name, has_pr));
+			status_results.push(format!("`{branch_name}` ✅"));
 		}
 	}
 
@@ -97,6 +90,8 @@ pub async fn respond(
 		config.nixpkgs_branches.iter(),
 	)?;
 
+	// if we don't find the commit in any branches from above, we can pretty safely assume
+	// it's an unmerged PR
 	let embed_description: String = if status_results.is_empty() {
 		"It doesn't look like this PR has been merged yet! (or maybe I just haven't updated)"
 			.to_string()

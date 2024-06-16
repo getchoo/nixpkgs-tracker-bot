@@ -38,7 +38,7 @@ impl ClientExt for Client {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the request fails
+	/// Will return [`Err`] if the request fails
 	async fn get_request(&self, url: &str) -> Result<Response, Error> {
 		trace!("Making GET request to {url}");
 
@@ -52,7 +52,7 @@ impl ClientExt for Client {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the request fails or cannot be deserialized
+	/// Will return [`Err`] if the request fails or cannot be deserialized
 	async fn get_json<T: DeserializeOwned>(&self, url: &str) -> Result<T, Error> {
 		let resp = self.get_request(url).await?;
 		let json = resp.json().await?;

@@ -10,7 +10,7 @@ pub trait ClientExt {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the merge commit cannot be found
+	/// Will return [`Err`] if the merge commit cannot be found
 	fn merge_commit_for(
 		&self,
 		repo_owner: &str,

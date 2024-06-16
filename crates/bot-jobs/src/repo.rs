@@ -11,6 +11,7 @@ pub const TTL_SECS: u64 = 60 * 5; // 5 minutes
 // much of this is shamelessly lifted from
 // https://github.com/rust-lang/git2-rs/blob/9a5c9706ff578c936be644dd1e8fe155bdc4d129/examples/pull.rs
 
+/// basic set of options for fetching from remotes
 fn fetch_options<'a>() -> FetchOptions<'a> {
 	let mut remote_callbacks = RemoteCallbacks::new();
 	remote_callbacks.transfer_progress(|progress| {
@@ -39,6 +40,7 @@ fn fetch_options<'a>() -> FetchOptions<'a> {
 	fetch_opts
 }
 
+/// update the given branches in the [`repository`] using the nixpkgs remote
 fn update_branches_in(repository: &Repository, branches: &[String]) -> Result<(), Error> {
 	let mut remote = repository.find_remote(NIXPKGS_REMOTE)?;
 	// download all the refs
