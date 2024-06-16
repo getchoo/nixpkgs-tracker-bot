@@ -49,6 +49,7 @@ impl Handler {
 		};
 
 		match command_name {
+			"about" => bot_commands::about::respond(ctx, &http, command).await?,
 			"ping" => bot_commands::ping::respond(ctx, command).await?,
 			"track" => bot_commands::track::respond(ctx, &http, &config, command).await?,
 			_ => {
