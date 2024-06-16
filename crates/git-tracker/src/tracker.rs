@@ -65,11 +65,18 @@ impl Tracker {
 		commit: &Commit,
 	) -> Result<bool, Error> {
 		let head = reference.peel_to_commit()?;
+
+		// NOTE: we have to check this as `Repository::graph_descendant_of()` (like the name says)
+		// only finds *descendants* of it's parent commit, and will not tell us if the parent commit
+		// *is* the child commit. i have no idea why i didn't think of this, but that's why this
+		// comment is here now
+		let is_head = head.id() == commit.id();
+
 		let has_commit = self
 			.repository
 			.graph_descendant_of(head.id(), commit.id())?;
 
-		Ok(has_commit)
+		Ok(has_commit || is_head)
 	}
 
 	/// Check if a [`Branch`] named [`branch_name`] has a commit with the SHA [`commit_sha`]
