@@ -98,7 +98,8 @@ pub async fn respond(
 	)?;
 
 	let embed_description: String = if status_results.is_empty() {
-		"It doesn't look like this PR has been merged yet!".to_string()
+		"It doesn't look like this PR has been merged yet! (or maybe I just haven't updated)"
+			.to_string()
 	} else {
 		status_results.join("\n")
 	};

@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use git2::{Branch, BranchType, Commit, Oid, Reference, Repository};
+use git2::{Branch, BranchType, Commit, ErrorCode, Oid, Reference, Repository};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -83,10 +83,24 @@ impl Tracker {
 	///
 	/// # Errors
 	///
-	/// Will return [`Err`] if the commit SHA cannot be resolved to a commit, the branch name cannot
+	/// Will return [`Err`] if the commit SHA cannot be resolved to an object id, the branch name cannot
 	/// be resolved to a branch, or the descendants of the resolved branch cannot be resolved
 	pub fn branch_contains_sha(&self, branch_name: &str, commit_sha: &str) -> Result<bool, Error> {
-		let commit = self.commit_by_sha(commit_sha)?;
+		let commit = match self.commit_by_sha(commit_sha) {
+			Ok(commit) => commit,
+			Err(why) => {
+				// NOTE: we assume commits not found are just not in the branch *yet*, not an error
+				// this is because github decides to report merge commit shas for unmerged PRs...yeah
+				if let Error::Git(git_error) = &why {
+					if git_error.code() == ErrorCode::NotFound {
+						return Ok(false);
+					}
+				}
+
+				return Err(why);
+			}
+		};
+
 		let branch = self.branch_by_name(branch_name)?;
 		let has_pr = self.ref_contains_commit(&branch.into_reference(), &commit)?;
 
