@@ -1,5 +1,5 @@
 #[tokio::main]
-async fn main() -> Result<(), bot_client::Error> {
+async fn main() -> Result<(), bot_error::Error> {
 	dotenvy::dotenv().ok();
 	env_logger::try_init()?;
 

@@ -2,7 +2,11 @@
 members = [
 	"crates/bot",
 	"crates/bot-client",
+	"crates/bot-config",
+	"crates/bot-consts",
+	"crates/bot-error",
 	"crates/bot-http",
+	"crates/bot-jobs",
 	"crates/git-tracker"
 ]
 resolver = "2"
@@ -10,11 +14,17 @@ resolver = "2"
 [workspace.dependencies]
 bot = { path = "./crates/bot" }
 bot-client = { path = "./crates/bot-client" }
+bot-commands = { path = "./crates/bot-commands" }
+bot-config = { path = "./crates/bot-config" }
+bot-consts = { path = "./crates/bot-consts" }
+bot-error = { path = "./crates/bot-error" }
 bot-http = { path = "./crates/bot-http" }
+bot-jobs = { path = "./crates/bot-jobs" }
 git-tracker = { path = "./crates/git-tracker" }
 
 git2 = { version = "0.18.3", default-features = false }
 log = "0.4.21"
+serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
 tokio = { version = "1.38.0", features = [
 	"macros",
 	"rt-multi-thread",

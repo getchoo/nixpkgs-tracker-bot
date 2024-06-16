@@ -1,4 +1,5 @@
-use crate::{Error, NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_consts::{NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_error::Error;
 
 use std::{io::Write, path::Path};
 

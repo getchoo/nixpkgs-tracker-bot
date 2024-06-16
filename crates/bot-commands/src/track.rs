@@ -1,6 +1,7 @@
-use crate::{Config, Error, NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_config::Config;
+use bot_consts::{NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
+use bot_error::Error;
 use bot_http::{self as http, GithubClientExt};
-use git2::Commit;
 use git_tracker::Tracker;
 
 use log::trace;
@@ -20,25 +21,6 @@ fn to_status_string(branch_name: &str, has_pr: bool) -> String {
 	format!("`{branch_name}` {emoji}")
 }
 
-/// Find the branch by it's name and check if it has the commit [`commit`]
-///
-/// # Errors
-///
-/// Will return `Err` if the remote branch can't be found by it's name or if we
-/// cannot determine if said branch contains the given commit
-fn has_commit(
-	tracker: &Tracker,
-	branch_name: &str,
-	commit: &Commit,
-) -> Result<bool, git_tracker::Error> {
-	trace!("Checking for commit in {branch_name}");
-	let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
-	let branch = tracker.branch_by_name(&full_branch_name)?;
-	let has_pr = tracker.ref_contains_commit(&branch.into_reference(), commit)?;
-
-	Ok(has_pr)
-}
-
 /// Collect the status of the commit SHA [`commit_sha`] in each of the nixpkgs
 /// branches in [`branches`], using the repository at path [`repository_path`]
 ///
@@ -55,15 +37,16 @@ fn collect_statuses_in(
 	// start tracking nixpkgs
 	let tracker = Tracker::from_path(repository_path)?;
 
-	// find the merge commit
-	let commit = tracker.commit_by_sha(commit_sha)?;
-
 	// check to see what branches it's in
 	let status_results = branches
 		.iter()
 		.map(|branch_name| {
-			let has_pr = has_commit(&tracker, branch_name, &commit)?;
-			Ok(to_status_string(branch_name, has_pr))
+			trace!("Checking for commit in {branch_name}");
+			let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
+			let has_pr = tracker.branch_contains_sha(&full_branch_name, commit_sha)?;
+			let status_string = to_status_string(branch_name, has_pr);
+
+			Ok(status_string)
 		})
 		.collect::<Result<Vec<String>, git_tracker::Error>>()?;
 

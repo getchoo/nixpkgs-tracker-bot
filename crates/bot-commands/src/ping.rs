@@ -1,4 +1,4 @@
-use crate::Error;
+use bot_error::Error;
 
 use serenity::builder::{
 	CreateCommand, CreateInteractionResponse, CreateInteractionResponseMessage,

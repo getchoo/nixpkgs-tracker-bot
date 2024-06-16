@@ -1,45 +1,21 @@
-use std::sync::Arc;
-
+use bot_config::Config;
+use bot_error::Error;
 use bot_http as http;
+
+use std::sync::Arc;
 
 use log::trace;
 use serenity::prelude::{Client, GatewayIntents, TypeMapKey};
 
-mod commands;
-mod consts;
 mod handler;
-mod jobs;
-
-use consts::{NIXPKGS_BRANCHES, NIXPKGS_REMOTE, NIXPKGS_URL};
 
 use handler::Handler;
-
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
 
 /// Container for [`http::Client`]
 struct SharedHttp;
 
 impl TypeMapKey for SharedHttp {
 	type Value = Arc<http::Client>;
-}
-
-/// Our [`Client`]'s configuration
-#[derive(Clone, Debug)]
-struct Config {
-	pub nixpkgs_path: String,
-}
-
-impl Config {
-	/// Create a new instance of [`Config`] based on variables from the environment
-	///
-	/// # Errors
-	///
-	/// Will error if a variable is not found.
-	pub fn from_env() -> Result<Self, Error> {
-		let nixpkgs_path = std::env::var("BOT_NIXPKGS_PATH")?;
-
-		Ok(Self { nixpkgs_path })
-	}
 }
 
 /// Container for [`Config`]
@@ -97,7 +73,7 @@ pub async fn get() -> Result<Client, Error> {
 	});
 
 	// run our jobs
-	jobs::dispatch(config)?;
+	bot_jobs::dispatch(config)?;
 
 	Ok(client)
 }

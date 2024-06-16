@@ -20,7 +20,7 @@ impl Tracker {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the repository can not be opened
+	/// Will return [`Err`] if the repository can not be opened
 	pub fn from_path(path: &str) -> Result<Self, Error> {
 		let repository_path = Path::new(path);
 		if repository_path.exists() {
@@ -35,7 +35,7 @@ impl Tracker {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the branch cannot be found locally
+	/// Will return [`Err`] if the branch cannot be found locally
 	pub fn branch_by_name(&self, name: &str) -> Result<Branch, Error> {
 		Ok(self.repository.find_branch(name, BranchType::Remote)?)
 	}
@@ -44,7 +44,7 @@ impl Tracker {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if [`sha`] cannot be converted an [`Oid`] or
+	/// Will return [`Err`] if [`sha`] cannot be converted an [`Oid`] or
 	/// a commit matching it cannot be found
 	pub fn commit_by_sha(&self, sha: &str) -> Result<Commit, Error> {
 		let oid = Oid::from_str(sha)?;
@@ -57,7 +57,8 @@ impl Tracker {
 	///
 	/// # Errors
 	///
-	/// Will return `Err` if the reference cannot be resolved to a commit
+	/// Will return [`Err`] if the reference cannot be resolved to a commit or the descendants
+	/// of the reference cannot be resolved
 	pub fn ref_contains_commit(
 		&self,
 		reference: &Reference,
@@ -69,5 +70,19 @@ impl Tracker {
 			.graph_descendant_of(head.id(), commit.id())?;
 
 		Ok(has_commit)
+	}
+
+	/// Check if a [`Branch`] named [`branch_name`] has a commit with the SHA [`commit_sha`]
+	///
+	/// # Errors
+	///
+	/// Will return [`Err`] if the commit SHA cannot be resolved to a commit, the branch name cannot
+	/// be resolved to a branch, or the descendants of the resolved branch cannot be resolved
+	pub fn branch_contains_sha(&self, branch_name: &str, commit_sha: &str) -> Result<bool, Error> {
+		let commit = self.commit_by_sha(commit_sha)?;
+		let branch = self.branch_by_name(branch_name)?;
+		let has_pr = self.ref_contains_commit(&branch.into_reference(), &commit)?;
+
+		Ok(has_pr)
 	}
 }

@@ -1,18 +1,15 @@
 [package]
-name = "nixpkgs-tracker-bot"
+name = "bot-error"
 version = "0.1.0"
 edition = "2021"
 
 authors = ["seth <getchoo at tuta dot io>"]
-description = "A small Discord app that helps you track where nixpkgs PRs have reached"
+description = "Shared Err variant used for (most of) nixpkgs-tracker-bot"
 repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
 
+publish = false
+
 [dependencies]
-bot-error = { workspace = true }
-bot-client = { workspace = true }
-dotenvy = "0.15.7"
-env_logger = "0.11.3"
-tokio = { workspace = true }
 
 [lints.rust]
 unsafe_code = "forbid"
