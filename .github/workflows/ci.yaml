@@ -38,8 +38,8 @@ jobs:
         run: |
           cargo build --locked --release
 
-  format-and-lint:
-    name: Format and lint
+  treefmt:
+    name: Treefmt
 
     runs-on: ubuntu-latest
 
@@ -50,13 +50,13 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v12
 
-      - name: Run checks
+      - name: Run check
         run: |
           nix flake check --print-build-logs --show-trace
 
   release-gate:
     name: CI Release gate
-    needs: [build, format-and-lint]
+    needs: [build, treefmt]
 
     runs-on: ubuntu-latest
 
