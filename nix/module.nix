@@ -1,13 +1,14 @@
-self: {
+self:
+{
   config,
   lib,
   pkgs,
   ...
-}: let
+}:
+let
   cfg = config.services.nixpkgs-tracker-bot;
 
-  inherit
-    (lib)
+  inherit (lib)
     getExe
     literalExpression
     mkEnableOption
@@ -18,12 +19,12 @@ self: {
     ;
 
   inherit (pkgs.stdenv.hostPlatform) system;
-in {
+in
+{
   options.services.nixpkgs-tracker-bot = {
     enable = mkEnableOption "nixpkgs-tracker-bot";
-    package = mkPackageOption (
-      self.packages.${system} or (throw "${system} is not supported!")
-    ) "nixpkgs-tracker-bot" {};
+    package = mkPackageOption (self.packages.${system} or (throw "${system} is not supported!")
+    ) "nixpkgs-tracker-bot" { };
 
     environmentFile = mkOption {
       description = ''
@@ -40,8 +41,8 @@ in {
   config = mkIf cfg.enable {
     systemd.services.nixpkgs-tracker-bot = {
       enable = true;
-      wantedBy = ["multi-user.target"];
-      after = ["network.target"];
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" ];
 
       script = ''
         ${getExe cfg.package}
@@ -82,9 +83,7 @@ in {
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-        ];
+        SystemCallFilter = [ "@system-service" ];
         UMask = "0077";
       };
     };

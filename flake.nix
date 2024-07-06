@@ -12,116 +12,107 @@
       };
     };
 
-    flake-checks.url = "github:getchoo/flake-checks";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    fenix,
-    flake-checks,
-  }: let
-    systems = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ];
+  outputs =
+    {
+      self,
+      nixpkgs,
+      fenix,
+      treefmt-nix,
+    }:
+    let
+      inherit (nixpkgs) lib;
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
 
-    forAllSystems = function: nixpkgs.lib.genAttrs systems (system: function nixpkgs.legacyPackages.${system});
-  in {
-    checks = forAllSystems ({
-      lib,
-      pkgs,
-      ...
-    }: {
-      inherit
-        (flake-checks.lib.mkChecks {
-          inherit pkgs;
-          root = lib.fileset.toSource {
-            root = ./.;
-            fileset = lib.fileset.gitTracked ./.;
+      forAllSystems = lib.genAttrs systems;
+      nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
+      treefmtFor = forAllSystems (system: treefmt-nix.lib.evalModule nixpkgsFor.${system} ./treefmt.nix);
+    in
+    {
+      checks = forAllSystems (system: {
+        treefmt = treefmtFor.${system}.config.build.check self;
+      });
+
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+          inputsFrom = [ self.packages.${system}.nixpkgs-tracker-bot ];
+        in
+        {
+          default = pkgs.mkShell {
+            inherit inputsFrom;
+            RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+
+            packages = [
+              pkgs.clippy
+              pkgs.rustfmt
+              pkgs.rust-analyzer
+
+              self.formatter.${system}
+            ];
           };
-        })
-        actionlint
-        deadnix
-        rustfmt
-        statix
-        ;
-    });
 
-    devShells = forAllSystems ({
-      pkgs,
-      system,
-      ...
-    }: let
-      inputsFrom = [self.packages.${system}.nixpkgs-tracker-bot];
-    in {
-      default = pkgs.mkShell {
-        inherit inputsFrom;
-        RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+          ci = pkgs.mkShell {
+            inherit inputsFrom;
+            packages = [
+              pkgs.clippy
+              pkgs.rustfmt
+            ];
+          };
+        }
+      );
 
-        packages = [
-          pkgs.clippy
-          pkgs.rustfmt
-          pkgs.rust-analyzer
+      formatter = forAllSystems (system: treefmtFor.${system}.config.build.wrapper);
 
-          pkgs.actionlint
-          pkgs.deadnix
-          pkgs.nil
-          pkgs.statix
+      nixosModules.default = import ./nix/module.nix self;
 
-          self.formatter.${system}
-        ];
-      };
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+          packages = self.packages.${system};
 
-      ci = pkgs.mkShell {
-        inherit inputsFrom;
-        packages = [
-          pkgs.clippy
-          pkgs.rustfmt
-        ];
-      };
-    });
+          mkStaticWith = pkgs.callPackage ./nix/static.nix {
+            inherit (packages) nixpkgs-tracker-bot;
+            fenix = fenix.packages.${system};
+          };
 
-    formatter = forAllSystems (pkgs: pkgs.alejandra);
+          containerWith =
+            nixpkgs-tracker-bot:
+            let
+              arch = nixpkgs-tracker-bot.stdenv.hostPlatform.ubootArch;
+            in
+            pkgs.dockerTools.buildLayeredImage {
+              name = "nixpkgs-tracker-bot";
+              tag = "latest-${arch}";
+              config.Cmd = [ (lib.getExe nixpkgs-tracker-bot) ];
+              architecture = arch;
+            };
+        in
+        {
+          nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix {
+            version = self.shortRev or self.dirtyShortRev or "unknown";
+          };
 
-    nixosModules.default = import ./nix/module.nix self;
+          default = packages.nixpkgs-tracker-bot;
 
-    packages = forAllSystems ({
-      lib,
-      pkgs,
-      system,
-      ...
-    }: let
-      packages = self.packages.${system};
+          static-x86_64 = mkStaticWith { arch = "x86_64"; };
+          static-arm64 = mkStaticWith { arch = "aarch64"; };
 
-      mkStaticWith = pkgs.callPackage ./nix/static.nix {
-        inherit (packages) nixpkgs-tracker-bot;
-        fenix = fenix.packages.${system};
-      };
-
-      containerWith = nixpkgs-tracker-bot: let
-        arch = nixpkgs-tracker-bot.stdenv.hostPlatform.ubootArch;
-      in
-        pkgs.dockerTools.buildLayeredImage {
-          name = "nixpkgs-tracker-bot";
-          tag = "latest-${arch}";
-          config.Cmd = [(lib.getExe nixpkgs-tracker-bot)];
-          architecture = arch;
-        };
-    in {
-      nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix {
-        version = self.shortRev or self.dirtyShortRev or "unknown";
-      };
-
-      default = packages.nixpkgs-tracker-bot;
-
-      static-x86_64 = mkStaticWith {arch = "x86_64";};
-      static-arm64 = mkStaticWith {arch = "aarch64";};
-
-      container-x86_64 = containerWith packages.static-x86_64;
-      container-arm64 = containerWith packages.static-arm64;
-    });
-  };
+          container-x86_64 = containerWith packages.static-x86_64;
+          container-arm64 = containerWith packages.static-arm64;
+        }
+      );
+    };
 }
