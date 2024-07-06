@@ -11,8 +11,6 @@
         rust-analyzer-src.follows = "";
       };
     };
-
-    flake-checks.url = "github:getchoo/flake-checks";
   };
 
   outputs =
@@ -20,7 +18,6 @@
       self,
       nixpkgs,
       fenix,
-      flake-checks,
     }:
     let
       inherit (nixpkgs) lib;
@@ -35,22 +32,6 @@
       nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
     in
     {
-      checks = forAllSystems (system: {
-        inherit
-          (flake-checks.lib.mkChecks {
-            pkgs = nixpkgsFor.${system};
-            root = lib.fileset.toSource {
-              root = ./.;
-              fileset = lib.fileset.gitTracked ./.;
-            };
-          })
-          actionlint
-          deadnix
-          rustfmt
-          statix
-          ;
-      });
-
       devShells = forAllSystems (
         system:
         let
