@@ -23,6 +23,7 @@
       flake-checks,
     }:
     let
+      inherit (nixpkgs) lib;
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -30,32 +31,30 @@
         "aarch64-darwin"
       ];
 
-      forAllSystems =
-        function: nixpkgs.lib.genAttrs systems (system: function nixpkgs.legacyPackages.${system});
+      forAllSystems = lib.genAttrs systems;
+      nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
     in
     {
-      checks = forAllSystems (
-        { lib, pkgs, ... }:
-        {
-          inherit
-            (flake-checks.lib.mkChecks {
-              inherit pkgs;
-              root = lib.fileset.toSource {
-                root = ./.;
-                fileset = lib.fileset.gitTracked ./.;
-              };
-            })
-            actionlint
-            deadnix
-            rustfmt
-            statix
-            ;
-        }
-      );
+      checks = forAllSystems (system: {
+        inherit
+          (flake-checks.lib.mkChecks {
+            pkgs = nixpkgsFor.${system};
+            root = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.gitTracked ./.;
+            };
+          })
+          actionlint
+          deadnix
+          rustfmt
+          statix
+          ;
+      });
 
       devShells = forAllSystems (
-        { pkgs, system, ... }:
+        system:
         let
+          pkgs = nixpkgsFor.${system};
           inputsFrom = [ self.packages.${system}.nixpkgs-tracker-bot ];
         in
         {
@@ -87,18 +86,14 @@
         }
       );
 
-      formatter = forAllSystems (pkgs: pkgs.nixfmt-rfc-style);
+      formatter = forAllSystems (system: nixpkgsFor.${system}.nixfmt-rfc-style);
 
       nixosModules.default = import ./nix/module.nix self;
 
       packages = forAllSystems (
-        {
-          lib,
-          pkgs,
-          system,
-          ...
-        }:
+        system:
         let
+          pkgs = nixpkgsFor.${system};
           packages = self.packages.${system};
 
           mkStaticWith = pkgs.callPackage ./nix/static.nix {
