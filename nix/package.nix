@@ -22,16 +22,18 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
-  nativeBuildInputs = [pkg-config];
-  buildInputs = [openssl];
+  nativeBuildInputs = [ pkg-config ];
+  buildInputs = [ openssl ];
 
-  env = let
-    toRustFlags = lib.mapAttrs' (
-      name:
-        lib.nameValuePair
-        "CARGO_BUILD_RELEASE_${lib.toUpper (builtins.replaceStrings ["-"] ["_"] name)}"
-    );
-  in
+  env =
+    let
+      toRustFlags = lib.mapAttrs' (
+        name:
+        lib.nameValuePair "CARGO_BUILD_RELEASE_${
+          lib.toUpper (builtins.replaceStrings [ "-" ] [ "_" ] name)
+        }"
+      );
+    in
     lib.optionalAttrs lto (toRustFlags {
       lto = "thin";
     })
@@ -47,6 +49,6 @@ rustPlatform.buildRustPackage {
     homepage = "https://github.com/getchoo/nixpkgs-tracker-bot";
     mainProgram = "nixpkgs-tracker-bot";
     license = lib.licenses.mit;
-    maintainers = [lib.maintainers.getchoo];
+    maintainers = [ lib.maintainers.getchoo ];
   };
 }
