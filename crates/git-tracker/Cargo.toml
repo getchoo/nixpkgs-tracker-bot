@@ -12,7 +12,7 @@ publish = false
 [dependencies]
 git2 = { workspace = true }
 log = { workspace = true }
-thiserror = "1.0.62"
+thiserror = "1.0.63"
 
 [lints.rust]
 async_fn_in_trait = "allow"
