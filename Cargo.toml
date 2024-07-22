@@ -25,7 +25,7 @@ git-tracker = { path = "./crates/git-tracker" }
 git2 = { version = "0.18.3", default-features = false }
 log = "0.4.22"
 serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
-tokio = { version = "1.38.0", features = [
+tokio = { version = "1.38.1", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal"
