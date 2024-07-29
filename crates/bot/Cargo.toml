@@ -11,7 +11,7 @@ repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
 bot-error = { workspace = true }
 bot-client = { workspace = true }
 dotenvy = "0.15.7"
-env_logger = "0.11.3"
+env_logger = "0.11.5"
 tokio = { workspace = true }
 
 [lints.rust]
