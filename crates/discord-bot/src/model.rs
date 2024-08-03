@@ -10,4 +10,5 @@ pub struct PullRequest {
 #[derive(Clone, Debug, Deserialize)]
 pub struct RandomTeawie {
 	pub url: Option<String>,
+	pub error: Option<String>,
 }

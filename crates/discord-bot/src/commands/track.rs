@@ -1,7 +1,9 @@
+use std::sync::Arc;
+
 use crate::{
 	config::Config,
 	consts::{NIXPKGS_REMOTE, NIXPKGS_URL},
-	http::{self as http, GithubClientExt},
+	http::GitHubClientExt,
 };
 use git_tracker::Tracker;
 
@@ -47,12 +49,15 @@ fn collect_statuses_in<'a>(
 	Ok(status_results)
 }
 
-pub async fn respond(
+pub async fn respond<T>(
 	ctx: &Context,
-	http: &http::Client,
+	http: &Arc<T>,
 	config: &Config,
 	command: &CommandInteraction,
-) -> Result<()> {
+) -> Result<()>
+where
+	T: GitHubClientExt,
+{
 	// this will probably take a while
 	command.defer(&ctx).await?;
 
@@ -69,7 +74,7 @@ pub async fn respond(
 		return Ok(());
 	};
 
-	let Ok(pr_id) = u64::try_from(*pr) else {
+	let Ok(id) = u64::try_from(*pr) else {
 		let resp =
 			CreateInteractionResponseFollowup::new().content("PR numbers aren't negative...");
 		command.create_followup(&ctx, resp).await?;
@@ -78,7 +83,8 @@ pub async fn respond(
 	};
 
 	// find out what commit our PR was merged in
-	let Some(commit_sha) = http.merge_commit_for(REPO_OWNER, REPO_NAME, pr_id).await? else {
+	let pull_request = http.pull_request(REPO_OWNER, REPO_NAME, id).await?;
+	let Some(commit_sha) = pull_request.merge_commit_sha else {
 		let response = CreateInteractionResponseFollowup::new()
 			.content("It seems this pull request is very old. I can't track it");
 		command.create_followup(&ctx, response).await?;

@@ -1,37 +1,40 @@
-use super::ClientExt as _;
 use crate::model::PullRequest;
 
 use std::future::Future;
 
 use eyre::Result;
+use log::trace;
 
 const GITHUB_API: &str = "https://api.github.com";
 
-pub trait ClientExt {
-	/// Get the commit that merged [`pr`] in [`repo_owner`]/[`repo_name`]
+pub trait Ext {
+	/// GET `/repos/{repo_owner}/{repo_name}/pulls/{id}`
 	///
 	/// # Errors
 	///
 	/// Will return [`Err`] if the merge commit cannot be found
-	fn merge_commit_for(
+	fn pull_request(
 		&self,
 		repo_owner: &str,
 		repo_name: &str,
-		pr: u64,
-	) -> impl Future<Output = Result<Option<String>>> + Send;
+		id: u64,
+	) -> impl Future<Output = Result<PullRequest>> + Send;
 }
 
-impl ClientExt for super::Client {
-	async fn merge_commit_for(
+impl Ext for super::Client {
+	async fn pull_request(
 		&self,
 		repo_owner: &str,
 		repo_name: &str,
-		pr: u64,
-	) -> Result<Option<String>> {
-		let url = format!("{GITHUB_API}/repos/{repo_owner}/{repo_name}/pulls/{pr}");
-		let resp: PullRequest = self.get_json(&url).await?;
-		let merge_commit = resp.merge_commit_sha;
+		id: u64,
+	) -> Result<PullRequest> {
+		let url = format!("{GITHUB_API}/repos/{repo_owner}/{repo_name}/pulls/{id}");
+		trace!("Making GET request to `{url}`");
+		let request = self.get(&url);
+		let response = request.send().await?;
+		response.error_for_status_ref()?;
+		let pull_request: PullRequest = response.json().await?;
 
-		Ok(merge_commit)
+		Ok(pull_request)
 	}
 }

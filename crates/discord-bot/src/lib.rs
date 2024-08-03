@@ -4,9 +4,9 @@ use eyre::Result;
 use log::trace;
 use serenity::prelude::{Client, GatewayIntents, TypeMapKey};
 
+mod commands;
 mod config;
 mod consts;
-mod commands;
 mod handler;
 mod http;
 mod jobs;
@@ -55,7 +55,7 @@ pub async fn client() -> Result<Client> {
 		.await?;
 
 	// add state stuff
-	let http_client = <http::Client as http::ClientExt>::default();
+	let http_client = <http::Client as http::Ext>::default();
 	let config = Config::from_env()?;
 
 	{
