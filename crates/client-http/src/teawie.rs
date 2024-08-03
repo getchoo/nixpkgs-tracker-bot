@@ -1,8 +1,7 @@
-use crate::model::RandomTeawie;
+use crate::{Error, RandomTeawie};
 
 use std::future::Future;
 
-use eyre::Result;
 use log::trace;
 
 const TEAWIE_API: &str = "https://api.getchoo.com";
@@ -13,11 +12,11 @@ pub trait Ext {
 	/// # Errors
 	///
 	/// Will return [`Err`] if the request fails or the response cannot be deserialized
-	fn random_teawie(&self) -> impl Future<Output = Result<RandomTeawie>> + Send;
+	fn random_teawie(&self) -> impl Future<Output = Result<RandomTeawie, Error>> + Send;
 }
 
 impl Ext for super::Client {
-	async fn random_teawie(&self) -> Result<RandomTeawie> {
+	async fn random_teawie(&self) -> Result<RandomTeawie, Error> {
 		let url = format!("{TEAWIE_API}/random_teawie");
 
 		trace!("Making GET request to {url}");

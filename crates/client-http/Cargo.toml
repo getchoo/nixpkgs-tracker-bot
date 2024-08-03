@@ -1,0 +1,20 @@
+[package]
+name = "nixpkgs-tracker-http"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+log.workspace = true
+serde = { version = "1.0.204", features = ["derive"] }
+reqwest = { version = "0.12.5", default-features = false, features = [
+	"charset",
+	"http2",
+	"rustls-tls",
+	"json"
+] }
+
+[lints]
+workspace = true

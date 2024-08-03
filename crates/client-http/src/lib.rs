@@ -1,10 +1,13 @@
 mod github;
+mod model;
 mod teawie;
 
 pub use github::Ext as GitHubClientExt;
+pub use model::*;
 pub use teawie::Ext as TeawieClientExt;
 
 pub type Client = reqwest::Client;
+pub type Error = reqwest::Error;
 
 /// Fun trait for functions we use with [Client]
 pub trait Ext {

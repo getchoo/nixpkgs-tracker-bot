@@ -1,8 +1,7 @@
-use crate::model::PullRequest;
+use super::{Error, PullRequest};
 
 use std::future::Future;
 
-use eyre::Result;
 use log::trace;
 
 const GITHUB_API: &str = "https://api.github.com";
@@ -18,7 +17,7 @@ pub trait Ext {
 		repo_owner: &str,
 		repo_name: &str,
 		id: u64,
-	) -> impl Future<Output = Result<PullRequest>> + Send;
+	) -> impl Future<Output = Result<PullRequest, Error>> + Send;
 }
 
 impl Ext for super::Client {
@@ -27,7 +26,7 @@ impl Ext for super::Client {
 		repo_owner: &str,
 		repo_name: &str,
 		id: u64,
-	) -> Result<PullRequest> {
+	) -> Result<PullRequest, Error> {
 		let url = format!("{GITHUB_API}/repos/{repo_owner}/{repo_name}/pulls/{id}");
 		trace!("Making GET request to `{url}`");
 		let request = self.get(&url);
