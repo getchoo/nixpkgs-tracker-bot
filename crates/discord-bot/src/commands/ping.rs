@@ -1,12 +1,11 @@
-use bot_error::Error;
-
+use eyre::Result;
 use serenity::builder::{
 	CreateCommand, CreateInteractionResponse, CreateInteractionResponseMessage,
 };
 use serenity::model::application::{CommandInteraction, InstallationContext};
 use serenity::prelude::Context;
 
-pub async fn respond(ctx: &Context, command: &CommandInteraction) -> Result<(), Error> {
+pub async fn respond(ctx: &Context, command: &CommandInteraction) -> Result<()> {
 	let message = CreateInteractionResponseMessage::new().content("Pong!");
 	let response = CreateInteractionResponse::Message(message);
 	command.create_response(&ctx, response).await?;

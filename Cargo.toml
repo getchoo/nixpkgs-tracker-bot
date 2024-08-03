@@ -1,32 +1,30 @@
 [workspace]
+resolver = "2"
 members = [
-	"crates/bot",
-	"crates/bot-client",
-	"crates/bot-config",
-	"crates/bot-consts",
-	"crates/bot-error",
-	"crates/bot-http",
-	"crates/bot-jobs",
+	"crates/discord-bot",
 	"crates/git-tracker"
 ]
-resolver = "2"
+
+[workspace.package]
+version = "0.2.0"
+authors = ["seth <getchoo at tuta dot io>"]
+edition = "2021"
+repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+license = "MIT"
 
 [workspace.dependencies]
-bot = { path = "./crates/bot" }
-bot-client = { path = "./crates/bot-client" }
-bot-commands = { path = "./crates/bot-commands" }
-bot-config = { path = "./crates/bot-config" }
-bot-consts = { path = "./crates/bot-consts" }
-bot-error = { path = "./crates/bot-error" }
-bot-http = { path = "./crates/bot-http" }
-bot-jobs = { path = "./crates/bot-jobs" }
 git-tracker = { path = "./crates/git-tracker" }
 
 git2 = { version = "0.18.3", default-features = false }
 log = "0.4.22"
-serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
-tokio = { version = "1.39.2", features = [
-	"macros",
-	"rt-multi-thread",
-	"signal"
-] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

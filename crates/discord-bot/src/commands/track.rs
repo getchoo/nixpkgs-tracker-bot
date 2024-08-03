@@ -1,9 +1,11 @@
-use bot_config::Config;
-use bot_consts::{NIXPKGS_REMOTE, NIXPKGS_URL};
-use bot_error::Error;
-use bot_http::{self as http, GithubClientExt};
+use crate::{
+	config::Config,
+	consts::{NIXPKGS_REMOTE, NIXPKGS_URL},
+	http::{self as http, GithubClientExt},
+};
 use git_tracker::Tracker;
 
+use eyre::Result;
 use log::trace;
 use serenity::all::CreateEmbed;
 use serenity::builder::{CreateCommand, CreateCommandOption, CreateInteractionResponseFollowup};
@@ -26,7 +28,7 @@ fn collect_statuses_in<'a>(
 	repository_path: &str,
 	commit_sha: &str,
 	branches: impl IntoIterator<Item = &'a String>,
-) -> Result<Vec<String>, Error> {
+) -> Result<Vec<String>> {
 	// start tracking nixpkgs
 	let tracker = Tracker::from_path(repository_path)?;
 
@@ -50,7 +52,7 @@ pub async fn respond(
 	http: &http::Client,
 	config: &Config,
 	command: &CommandInteraction,
-) -> Result<(), Error> {
+) -> Result<()> {
 	// this will probably take a while
 	command.defer(&ctx).await?;
 

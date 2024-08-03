@@ -1,10 +1,10 @@
 use std::future::Future;
 
+use eyre::Result;
 use log::trace;
 use serde::de::DeserializeOwned;
 
 mod github;
-mod model;
 mod teawie;
 
 pub use github::ClientExt as GithubClientExt;
@@ -12,16 +12,12 @@ pub use teawie::ClientExt as TeawieClientExt;
 
 pub type Client = reqwest::Client;
 pub type Response = reqwest::Response;
-pub type Error = reqwest::Error;
 
 /// Fun trait for functions we use with [Client]
 pub trait ClientExt {
 	fn default() -> Self;
-	fn get_request(&self, url: &str) -> impl Future<Output = Result<Response, Error>> + Send;
-	fn get_json<T: DeserializeOwned>(
-		&self,
-		url: &str,
-	) -> impl Future<Output = Result<T, Error>> + Send;
+	fn get_request(&self, url: &str) -> impl Future<Output = Result<Response>> + Send;
+	fn get_json<T: DeserializeOwned>(&self, url: &str) -> impl Future<Output = Result<T>> + Send;
 }
 
 impl ClientExt for Client {
@@ -41,7 +37,7 @@ impl ClientExt for Client {
 	/// # Errors
 	///
 	/// Will return [`Err`] if the request fails
-	async fn get_request(&self, url: &str) -> Result<Response, Error> {
+	async fn get_request(&self, url: &str) -> Result<Response> {
 		trace!("Making GET request to {url}");
 
 		let resp = self.get(url).send().await?;
@@ -55,7 +51,7 @@ impl ClientExt for Client {
 	/// # Errors
 	///
 	/// Will return [`Err`] if the request fails or cannot be deserialized
-	async fn get_json<T: DeserializeOwned>(&self, url: &str) -> Result<T, Error> {
+	async fn get_json<T: DeserializeOwned>(&self, url: &str) -> Result<T> {
 		let resp = self.get_request(url).await?;
 		let json = resp.json().await?;
 		Ok(json)
