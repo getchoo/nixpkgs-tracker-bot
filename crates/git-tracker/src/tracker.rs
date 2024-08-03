@@ -76,7 +76,7 @@ impl Tracker {
 			.repository
 			.graph_descendant_of(head.id(), commit.id())?;
 
-		Ok(has_commit || is_head)
+		Ok(is_head || has_commit)
 	}
 
 	/// Check if a [`Branch`] named [`branch_name`] has a commit with the SHA [`commit_sha`]
