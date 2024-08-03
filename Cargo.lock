@@ -1050,10 +1050,18 @@ dependencies = [
  "git-tracker",
  "git2",
  "log",
- "reqwest 0.12.5",
- "serde",
+ "nixpkgs-tracker-http",
  "serenity",
  "tokio",
+]
+
+[[package]]
+name = "nixpkgs-tracker-http"
+version = "0.2.0"
+dependencies = [
+ "log",
+ "reqwest 0.12.5",
+ "serde",
 ]
 
 [[package]]

@@ -8,12 +8,11 @@ mod commands;
 mod config;
 mod consts;
 mod handler;
-mod http;
 mod jobs;
-mod model;
 
 use config::Config;
 use handler::Handler;
+use nixpkgs_tracker_http as http;
 
 /// Container for [`http::Client`]
 struct SharedHttp;
