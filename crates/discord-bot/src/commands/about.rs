@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::http::TeawieClientExt;
 
 use eyre::Result;
+use log::warn;
 use serenity::builder::{
 	CreateCommand, CreateEmbed, CreateEmbedFooter, CreateInteractionResponse,
 	CreateInteractionResponseMessage,
@@ -26,9 +27,13 @@ where
 			("Issues/Feature Requests", &format!("[getchoo/nixpkgs-tracker-bot/issues]({REPOSITORY}/issues)"), true)
 	]);
 
-	if let Some(teawie_url) = http.random_teawie().await? {
+	let random_teawie = http.random_teawie().await?;
+
+	if let Some(teawie_url) = random_teawie.url {
 		let footer = CreateEmbedFooter::new("Images courtesy of @sympathytea");
 		embed = embed.image(teawie_url).footer(footer);
+	} else if let Some(error) = random_teawie.error {
+		warn!("Error from TeawieAPI: {error:#?}");
 	};
 
 	let message = CreateInteractionResponseMessage::new().embed(embed);
