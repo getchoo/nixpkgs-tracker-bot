@@ -1,7 +1,9 @@
-use super::{ClientExt as _, Error};
+use super::ClientExt as _;
 use crate::model::PullRequest;
 
 use std::future::Future;
+
+use eyre::Result;
 
 const GITHUB_API: &str = "https://api.github.com";
 
@@ -16,7 +18,7 @@ pub trait ClientExt {
 		repo_owner: &str,
 		repo_name: &str,
 		pr: u64,
-	) -> impl Future<Output = Result<Option<String>, Error>> + Send;
+	) -> impl Future<Output = Result<Option<String>>> + Send;
 }
 
 impl ClientExt for super::Client {
@@ -25,7 +27,7 @@ impl ClientExt for super::Client {
 		repo_owner: &str,
 		repo_name: &str,
 		pr: u64,
-	) -> Result<Option<String>, Error> {
+	) -> Result<Option<String>> {
 		let url = format!("{GITHUB_API}/repos/{repo_owner}/{repo_name}/pulls/{pr}");
 		let resp: PullRequest = self.get_json(&url).await?;
 		let merge_commit = resp.merge_commit_sha;

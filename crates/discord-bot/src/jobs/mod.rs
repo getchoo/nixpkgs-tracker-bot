@@ -1,8 +1,8 @@
-use bot_config::Config;
-use bot_error::Error;
+use crate::config::Config;
 
 use std::time::Duration;
 
+use eyre::Result;
 use log::error;
 
 mod repo;
@@ -12,7 +12,7 @@ mod repo;
 /// # Errors
 ///
 /// Will return [`Err`] if any jobs fail
-pub fn dispatch(config: Config) -> Result<(), Error> {
+pub fn dispatch(config: Config) -> Result<()> {
 	repo::fetch_or_update_repository(&config.nixpkgs_path, &config.nixpkgs_branches)?;
 
 	tokio::spawn(async move {

@@ -1,8 +1,7 @@
-use bot_consts::{NIXPKGS_REMOTE, NIXPKGS_URL};
-use bot_error::Error;
-
+use crate::consts::{NIXPKGS_REMOTE, NIXPKGS_URL};
 use std::{io::Write, path::Path};
 
+use eyre::Result;
 use git2::{AutotagOption, FetchOptions, RemoteCallbacks, Repository};
 use log::{debug, info, trace, warn};
 
@@ -41,7 +40,7 @@ fn fetch_options<'a>() -> FetchOptions<'a> {
 }
 
 /// update the given branches in the [`repository`] using the nixpkgs remote
-fn update_branches_in(repository: &Repository, branches: &[String]) -> Result<(), Error> {
+fn update_branches_in(repository: &Repository, branches: &[String]) -> Result<()> {
 	let mut remote = repository.find_remote(NIXPKGS_REMOTE)?;
 	// download all the refs
 	remote.download(branches, Some(&mut fetch_options()))?;
@@ -52,7 +51,7 @@ fn update_branches_in(repository: &Repository, branches: &[String]) -> Result<()
 	Ok(())
 }
 
-pub fn fetch_or_update_repository(path: &str, branches: &[String]) -> Result<(), Error> {
+pub fn fetch_or_update_repository(path: &str, branches: &[String]) -> Result<()> {
 	// Open our repository or clone it if it doesn't exist
 	let path = Path::new(path);
 	let repository = if path.exists() {

@@ -171,67 +171,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bot-client"
-version = "0.2.0"
-dependencies = [
- "bot-commands",
- "bot-config",
- "bot-consts",
- "bot-error",
- "bot-http",
- "bot-jobs",
- "log",
- "serenity",
- "tokio",
-]
-
-[[package]]
-name = "bot-commands"
-version = "0.2.0"
-dependencies = [
- "bot-config",
- "bot-consts",
- "bot-error",
- "bot-http",
- "git-tracker",
- "log",
- "serenity",
-]
-
-[[package]]
-name = "bot-config"
-version = "0.2.0"
-
-[[package]]
-name = "bot-consts"
-version = "0.2.0"
-
-[[package]]
-name = "bot-error"
-version = "0.2.0"
-
-[[package]]
-name = "bot-http"
-version = "0.2.0"
-dependencies = [
- "log",
- "reqwest 0.12.5",
- "serde",
-]
-
-[[package]]
-name = "bot-jobs"
-version = "0.2.0"
-dependencies = [
- "bot-config",
- "bot-consts",
- "bot-error",
- "git2",
- "log",
- "tokio",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -493,6 +432,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
 dependencies = [
  "version_check",
+]
+
+[[package]]
+name = "eyre"
+version = "0.6.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7cd915d99f24784cdc19fd37ef22b97e3ff0ae756c7e492e9fbfe897d61e2aec"
+dependencies = [
+ "indenter",
+ "once_cell",
 ]
 
 [[package]]
@@ -923,6 +872,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "indenter"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce23b50ad8242c51a442f3ff322d56b02f08852c77e4c0b4d3fd684abc89c683"
+
+[[package]]
 name = "indexmap"
 version = "2.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1089,10 +1044,15 @@ dependencies = [
 name = "nixpkgs-tracker-bot"
 version = "0.2.0"
 dependencies = [
- "bot-client",
- "bot-error",
  "dotenvy",
  "env_logger",
+ "eyre",
+ "git-tracker",
+ "git2",
+ "log",
+ "reqwest 0.12.5",
+ "serde",
+ "serenity",
  "tokio",
 ]
 

@@ -1,6 +1,8 @@
-use bot_error::Error;
-use bot_http::TeawieClientExt;
+use std::sync::Arc;
 
+use crate::http::TeawieClientExt;
+
+use eyre::Result;
 use serenity::builder::{
 	CreateCommand, CreateEmbed, CreateEmbedFooter, CreateInteractionResponse,
 	CreateInteractionResponseMessage,
@@ -11,11 +13,10 @@ use serenity::prelude::Context;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const REPOSITORY: &str = env!("CARGO_PKG_REPOSITORY");
 
-pub async fn respond(
-	ctx: &Context,
-	http: &bot_http::Client,
-	command: &CommandInteraction,
-) -> Result<(), Error> {
+pub async fn respond<T>(ctx: &Context, http: &Arc<T>, command: &CommandInteraction) -> Result<()>
+where
+	T: TeawieClientExt,
+{
 	let mut embed = CreateEmbed::new()
 		.title("About nixpkgs-tracker-bot")
 		.description("I help track what branches PRs to nixpkgs have reached. If you've used [Nixpkgs Pull Request Tracker](https://nixpk.gs/pr-tracker.html), you probably know what this is about.")
