@@ -1,11 +1,10 @@
 {
   projectRootFile = ".git/config";
 
-  # TODO: add actionlint
-  # https://github.com/numtide/treefmt-nix/pull/146
   programs = {
+    actionlint.enable = true;
     deadnix.enable = true;
-    nixfmt-rfc-style.enable = true;
+    nixfmt.enable = true;
     rustfmt.enable = true;
     statix.enable = true;
   };
