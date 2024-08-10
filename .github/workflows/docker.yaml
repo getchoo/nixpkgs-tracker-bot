@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, arm64]
+        arch: [amd64, arm64]
 
     runs-on: ubuntu-latest
 
@@ -111,7 +111,7 @@ jobs:
         env:
           TAG: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         run: |
-          architectures=("x86_64" "arm64")
+          architectures=("amd64" "arm64")
           for arch in "${architectures[@]}"; do
             docker load < images/container-"$arch"/*.tar.gz
             docker tag nixpkgs-tracker-bot:latest-"$arch" "$TAG"-"$arch"
@@ -119,7 +119,7 @@ jobs:
           done
 
           docker manifest create "$TAG" \
-            --amend "$TAG"-x86_64 \
+            --amend "$TAG"-amd64 \
             --amend "$TAG"-arm64
 
           docker manifest push "$TAG"

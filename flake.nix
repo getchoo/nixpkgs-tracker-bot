@@ -85,7 +85,7 @@
           static-x86_64 = staticWith { arch = "x86_64"; };
           static-arm64 = staticWith { arch = "aarch64"; };
 
-          container-x86_64 = containerize packages'.static-x86_64;
+          container-amd64 = containerize packages'.static-x86_64;
           container-arm64 = containerize packages'.static-arm64;
         }
       );
