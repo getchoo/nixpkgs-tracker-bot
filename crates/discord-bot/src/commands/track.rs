@@ -1,14 +1,8 @@
 use std::sync::Arc;
 
-use crate::{
-	config::Config,
-	consts::{NIXPKGS_REMOTE, NIXPKGS_URL},
-	http::GitHubClientExt,
-};
-use git_tracker::Tracker;
+use crate::{config::Config, consts::NIXPKGS_URL, http::GitHubClientExt};
 
 use eyre::Result;
-use log::trace;
 use serenity::all::CreateEmbed;
 use serenity::builder::{CreateCommand, CreateCommandOption, CreateInteractionResponseFollowup};
 use serenity::model::application::{
@@ -18,36 +12,6 @@ use serenity::prelude::Context;
 
 const REPO_OWNER: &str = "NixOS";
 const REPO_NAME: &str = "nixpkgs";
-
-/// Collect the status of the commit SHA [`commit_sha`] in each of the nixpkgs
-/// branches in [`branches`], using the repository at path [`repository_path`]
-///
-/// # Errors
-///
-/// Will return [`Err`] if we can't start tracking a repository at the given path,
-/// or if we can't determine if the branch has given commit
-fn collect_statuses_in<'a>(
-	repository_path: &str,
-	commit_sha: &str,
-	branches: impl IntoIterator<Item = &'a String>,
-) -> Result<Vec<String>> {
-	// start tracking nixpkgs
-	let tracker = Tracker::from_path(repository_path)?;
-
-	// check to see what branches it's in
-	let mut status_results = vec![];
-	for branch_name in branches {
-		trace!("Checking for commit in {branch_name}");
-		let full_branch_name = format!("{NIXPKGS_REMOTE}/{branch_name}");
-		let has_pr = tracker.branch_contains_sha(&full_branch_name, commit_sha)?;
-
-		if has_pr {
-			status_results.push(format!("`{branch_name}` ✅"));
-		}
-	}
-
-	Ok(status_results)
-}
 
 pub async fn respond<T>(
 	ctx: &Context,
@@ -92,10 +56,10 @@ where
 		return Ok(());
 	};
 
-	let status_results = collect_statuses_in(
+	let status_results = git_tracker::collect_statuses_in(
 		&config.nixpkgs_path,
 		&commit_sha,
-		config.nixpkgs_branches.iter(),
+		&config.nixpkgs_branches,
 	)?;
 
 	// if we don't find the commit in any branches from above, we can pretty safely assume
@@ -104,7 +68,11 @@ where
 		"It doesn't look like this PR has been merged yet! (or maybe I just haven't updated)"
 			.to_string()
 	} else {
-		status_results.join("\n")
+		status_results
+			.iter()
+			.filter_map(|(branch_name, has_pr)| has_pr.then(|| format!("`{branch_name}` ✅")))
+			.collect::<Vec<String>>()
+			.join("\n")
 	};
 
 	let embed = CreateEmbed::new()

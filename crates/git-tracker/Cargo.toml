@@ -3,13 +3,14 @@ name = "git-tracker"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
-description = "A library that helps you track commits and branches in a Git repository"
+description = "Library that helps you track commits and branches in a Git repository"
 repository.workspace = true
+
 publish = false
 
 [dependencies]
-git2 = { workspace = true }
-log = { workspace = true }
+git2 = { version = "0.19.0", default-features = false, features = ["https"] }
+log.workspace = true
 thiserror = "1.0.63"
 
 [lints]

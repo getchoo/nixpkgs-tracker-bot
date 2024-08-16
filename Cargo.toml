@@ -1,9 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-	"crates/client-http",
-	"crates/discord-bot",
-	"crates/git-tracker"
+	"crates/*",
 ]
 
 [workspace.package]
@@ -14,10 +12,9 @@ repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
 license = "MIT"
 
 [workspace.dependencies]
-nixpkgs-tracker-http = { path = "./crates/client-http" }
 git-tracker = { path = "./crates/git-tracker" }
+nixpkgs-tracker-http = { path = "./crates/nixpkgs-tracker-http" }
 
-git2 = { version = "0.18.3", default-features = false }
 log = "0.4.22"
 
 [workspace.lints.rust]

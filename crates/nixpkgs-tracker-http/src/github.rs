@@ -28,9 +28,10 @@ impl Ext for super::Client {
 		id: u64,
 	) -> Result<PullRequest, Error> {
 		let url = format!("{GITHUB_API}/repos/{repo_owner}/{repo_name}/pulls/{id}");
-		trace!("Making GET request to `{url}`");
-		let request = self.get(&url);
-		let response = request.send().await?;
+
+		let request = self.get(&url).build()?;
+		trace!("Making GET request to `{}`", request.url());
+		let response = self.execute(request).await?;
 		response.error_for_status_ref()?;
 		let pull_request: PullRequest = response.json().await?;
 

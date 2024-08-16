@@ -1,17 +1,22 @@
 [package]
-name = "nixpkgs-tracker-bot"
+name = "discord-bot"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
-description = "A small Discord app that helps you track where nixpkgs PRs have reached"
+description = "Small Discord app that helps you track where nixpkgs PRs have reached"
 repository.workspace = true
 license.workspace = true
+
+publish = false
+
+[[bin]]
+name = "nixpkgs-tracker-bot"
+path = "src/main.rs"
 
 [dependencies]
 dotenvy = "0.15.7"
 env_logger = "0.11.5"
 eyre = "0.6.12"
-git2 = { workspace = true, features = ["https"] }
 git-tracker.workspace = true
 log.workspace = true
 nixpkgs-tracker-http.workspace = true

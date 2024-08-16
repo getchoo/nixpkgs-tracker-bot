@@ -1,3 +1,5 @@
+use crate::consts::NIXPKGS_REMOTE;
+
 use std::env;
 
 /// The Discord client's configuration
@@ -14,7 +16,7 @@ impl Config {
 	fn split_string_list(branches: &str) -> Vec<String> {
 		branches
 			.split(',')
-			.map(|branch| branch.trim().to_string())
+			.map(|branch| format!("{NIXPKGS_REMOTE}/{}", branch.trim()))
 			.collect()
 	}
 
