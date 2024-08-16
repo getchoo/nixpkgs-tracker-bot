@@ -43,14 +43,17 @@
             name = "check-clippy-sarif";
             inherit (self.packages.${system}.nixpkgs-tracker-bot) src cargoDeps;
 
-            nativeBuildInputs = [
-              pkgs.cargo
-              pkgs.clippy
-              pkgs.clippy-sarif
-              pkgs.rustPlatform.cargoSetupHook
-              pkgs.rustc
-              pkgs.sarif-fmt
+            nativeBuildInputs = with pkgs; [
+              cargo
+              clippy
+              clippy-sarif
+              pkg-config
+              rustPlatform.cargoSetupHook
+              rustc
+              sarif-fmt
             ];
+
+            buildInputs = [ pkgs.openssl ];
 
             buildPhase = ''
               cargo clippy \
