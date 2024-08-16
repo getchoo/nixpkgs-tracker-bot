@@ -48,6 +48,13 @@ where
 
 	// find out what commit our PR was merged in
 	let pull_request = http.pull_request(REPO_OWNER, REPO_NAME, id).await?;
+	if !pull_request.merged {
+		let response = CreateInteractionResponseFollowup::new()
+			.content("It looks like that PR isn't merged yet! Try again when it is 😄");
+		command.create_followup(&ctx, response).await?;
+
+		return Ok(());
+	}
 	let Some(commit_sha) = pull_request.merge_commit_sha else {
 		let response = CreateInteractionResponseFollowup::new()
 			.content("It seems this pull request is very old. I can't track it");

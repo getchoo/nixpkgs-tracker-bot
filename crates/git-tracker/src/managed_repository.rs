@@ -55,7 +55,12 @@ impl ManagedRepository {
 		remote.download(&self.tracked_branches, Some(&mut Self::fetch_options()))?;
 		remote.disconnect()?;
 		// and (hopefully) update what they refer to for later
-		remote.update_tips(None, RemoteUpdateFlags::UPDATE_FETCHHEAD, AutotagOption::Auto, None)?;
+		remote.update_tips(
+			None,
+			RemoteUpdateFlags::UPDATE_FETCHHEAD,
+			AutotagOption::Auto,
+			None,
+		)?;
 
 		Ok(())
 	}
