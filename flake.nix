@@ -4,6 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    # Inputs below this are optional
+    # `inputs.treefmt-nix.follows = ""`
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -30,9 +33,38 @@
       treefmtFor = forAllSystems (system: treefmt-nix.lib.evalModule nixpkgsFor.${system} ./treefmt.nix);
     in
     {
-      checks = forAllSystems (system: {
-        treefmt = treefmtFor.${system}.config.build.check self;
-      });
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          clippy-sarif = pkgs.stdenv.mkDerivation {
+            name = "check-clippy-sarif";
+            inherit (self.packages.${system}.nixpkgs-tracker-bot) src cargoDeps;
+
+            nativeBuildInputs = [
+              pkgs.cargo
+              pkgs.clippy
+              pkgs.clippy-sarif
+              pkgs.rustPlatform.cargoSetupHook
+              pkgs.rustc
+              pkgs.sarif-fmt
+            ];
+
+            buildPhase = ''
+              cargo clippy \
+                --all-features \
+                --all-targets \
+                --tests \
+                --message-format=json \
+              | clippy-sarif | tee $out | sarif-fmt
+            '';
+          };
+
+          treefmt = treefmtFor.${system}.config.build.check self;
+        }
+      );
 
       devShells = forAllSystems (
         system:
