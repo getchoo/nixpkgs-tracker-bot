@@ -73,7 +73,7 @@ jobs:
 
       - name: Run check
         run: |
-          nix flake check --print-build-logs --show-trace
+          nix fmt -- --fail-on-change
 
   release-gate:
     name: CI Release gate
