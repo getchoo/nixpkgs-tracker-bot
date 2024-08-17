@@ -1,15 +1,18 @@
-use bot_config::Config;
-use bot_error::Error;
-use bot_http as http;
-
 use std::sync::Arc;
 
+use eyre::Result;
 use log::trace;
 use serenity::prelude::{Client, GatewayIntents, TypeMapKey};
 
+mod commands;
+mod config;
+mod consts;
 mod handler;
+mod jobs;
 
+use config::Config;
 use handler::Handler;
+use nixpkgs_tracker_http as http;
 
 /// Container for [`http::Client`]
 struct SharedHttp;
@@ -26,7 +29,7 @@ impl TypeMapKey for SharedConfig {
 }
 
 /// Fetch our bot token
-fn token() -> Result<String, Error> {
+fn token() -> Result<String> {
 	let token = std::env::var("DISCORD_BOT_TOKEN")?;
 	Ok(token)
 }
@@ -41,7 +44,7 @@ fn token() -> Result<String, Error> {
 /// # Panics
 ///
 /// Will [`panic!`] if the bot token isn't found or the ctrl+c handler can't be made
-pub async fn get() -> Result<Client, Error> {
+pub async fn client() -> Result<Client> {
 	let token = token().expect("Couldn't find token in environment! Is DISCORD_BOT_TOKEN set?");
 
 	let intents = GatewayIntents::default();
@@ -51,7 +54,7 @@ pub async fn get() -> Result<Client, Error> {
 		.await?;
 
 	// add state stuff
-	let http_client = <http::Client as http::ClientExt>::default();
+	let http_client = <http::Client as http::Ext>::default();
 	let config = Config::from_env()?;
 
 	{
@@ -73,7 +76,7 @@ pub async fn get() -> Result<Client, Error> {
 	});
 
 	// run our jobs
-	bot_jobs::dispatch(config)?;
+	jobs::dispatch(config)?;
 
 	Ok(client)
 }

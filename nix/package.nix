@@ -3,13 +3,12 @@
   rustPlatform,
   openssl,
   pkg-config,
-  version,
   lto ? true,
   optimizeSize ? false,
 }:
 rustPlatform.buildRustPackage {
   pname = "nixpkgs-tracker-bot";
-  inherit version;
+  inherit ((lib.importTOML ../Cargo.toml).workspace.package) version;
 
   src = lib.fileset.toSource {
     root = ../.;

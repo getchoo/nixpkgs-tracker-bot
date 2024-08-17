@@ -4,13 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        rust-analyzer-src.follows = "";
-      };
-    };
+    # Inputs below this are optional
+    # `inputs.treefmt-nix.follows = ""`
 
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -22,7 +17,6 @@
     {
       self,
       nixpkgs,
-      fenix,
       treefmt-nix,
     }:
     let
@@ -39,21 +33,49 @@
       treefmtFor = forAllSystems (system: treefmt-nix.lib.evalModule nixpkgsFor.${system} ./treefmt.nix);
     in
     {
-      checks = forAllSystems (system: {
-        treefmt = treefmtFor.${system}.config.build.check self;
-      });
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          clippy-sarif = pkgs.stdenv.mkDerivation {
+            name = "check-clippy-sarif";
+            inherit (self.packages.${system}.nixpkgs-tracker-bot) src cargoDeps;
+
+            nativeBuildInputs = with pkgs; [
+              cargo
+              clippy
+              clippy-sarif
+              pkg-config
+              rustPlatform.cargoSetupHook
+              rustc
+              sarif-fmt
+            ];
+
+            buildInputs = [ pkgs.openssl ];
+
+            buildPhase = ''
+              cargo clippy \
+                --all-features \
+                --all-targets \
+                --tests \
+                --message-format=json \
+              | clippy-sarif | tee $out | sarif-fmt
+            '';
+          };
+
+          treefmt = treefmtFor.${system}.config.build.check self;
+        }
+      );
 
       devShells = forAllSystems (
         system:
         let
           pkgs = nixpkgsFor.${system};
-          inputsFrom = [ self.packages.${system}.nixpkgs-tracker-bot ];
         in
         {
           default = pkgs.mkShell {
-            inherit inputsFrom;
-            RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
-
             packages = [
               pkgs.clippy
               pkgs.rustfmt
@@ -61,14 +83,11 @@
 
               self.formatter.${system}
             ];
-          };
 
-          ci = pkgs.mkShell {
-            inherit inputsFrom;
-            packages = [
-              pkgs.clippy
-              pkgs.rustfmt
-            ];
+            inputsFrom = [ self.packages.${system}.nixpkgs-tracker-bot ];
+            env = {
+              RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+            };
           };
         }
       );
@@ -81,37 +100,21 @@
         system:
         let
           pkgs = nixpkgsFor.${system};
-          packages = self.packages.${system};
+          packages' = self.packages.${system};
 
-          mkStaticWith = pkgs.callPackage ./nix/static.nix {
-            inherit (packages) nixpkgs-tracker-bot;
-            fenix = fenix.packages.${system};
-          };
-
-          containerWith =
-            nixpkgs-tracker-bot:
-            let
-              arch = nixpkgs-tracker-bot.stdenv.hostPlatform.ubootArch;
-            in
-            pkgs.dockerTools.buildLayeredImage {
-              name = "nixpkgs-tracker-bot";
-              tag = "latest-${arch}";
-              config.Cmd = [ (lib.getExe nixpkgs-tracker-bot) ];
-              architecture = arch;
-            };
+          staticWith = pkgs.callPackage ./nix/static.nix { };
+          containerize = pkgs.callPackage ./nix/containerize.nix { };
         in
         {
-          nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix {
-            version = self.shortRev or self.dirtyShortRev or "unknown";
-          };
+          nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix { };
 
-          default = packages.nixpkgs-tracker-bot;
+          default = packages'.nixpkgs-tracker-bot;
 
-          static-x86_64 = mkStaticWith { arch = "x86_64"; };
-          static-arm64 = mkStaticWith { arch = "aarch64"; };
+          static-x86_64 = staticWith { arch = "x86_64"; };
+          static-arm64 = staticWith { arch = "aarch64"; };
 
-          container-x86_64 = containerWith packages.static-x86_64;
-          container-arm64 = containerWith packages.static-arm64;
+          container-amd64 = containerize packages'.static-x86_64;
+          container-arm64 = containerize packages'.static-arm64;
         }
       );
     };

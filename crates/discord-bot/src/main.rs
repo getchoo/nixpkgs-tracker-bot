@@ -1,9 +1,9 @@
 #[tokio::main]
-async fn main() -> Result<(), bot_error::Error> {
+async fn main() -> eyre::Result<()> {
 	dotenvy::dotenv().ok();
 	env_logger::try_init()?;
 
-	let mut client = bot_client::get().await?;
+	let mut client = discord_bot::client().await?;
 	client.start().await?;
 
 	Ok(())

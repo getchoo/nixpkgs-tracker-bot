@@ -2,17 +2,17 @@ use std::path::Path;
 
 use git2::{Branch, BranchType, Commit, ErrorCode, Oid, Reference, Repository};
 
+/// Helper struct for tracking Git objects
+pub struct Tracker {
+	repository: Repository,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
 	#[error("libgit2 error")]
 	Git(#[from] git2::Error),
 	#[error("Repository path not found at `{0}`")]
 	RepositoryPathNotFound(String),
-}
-
-/// Helper struct for tracking Git objects
-pub struct Tracker {
-	repository: Repository,
 }
 
 impl Tracker {
@@ -76,7 +76,7 @@ impl Tracker {
 			.repository
 			.graph_descendant_of(head.id(), commit.id())?;
 
-		Ok(has_commit || is_head)
+		Ok(is_head || has_commit)
 	}
 
 	/// Check if a [`Branch`] named [`branch_name`] has a commit with the SHA [`commit_sha`]

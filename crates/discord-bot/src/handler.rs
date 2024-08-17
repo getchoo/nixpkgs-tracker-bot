@@ -1,6 +1,6 @@
-use crate::{SharedConfig, SharedHttp};
-use bot_error::Error;
+use crate::{commands, SharedConfig, SharedHttp};
 
+use eyre::{OptionExt, Result};
 use log::{debug, error, info, trace, warn};
 use serenity::all::CreateBotAuthParameters;
 use serenity::async_trait;
@@ -19,8 +19,8 @@ use serenity::prelude::{Context, EventHandler};
 pub struct Handler;
 
 impl Handler {
-	async fn register_commands(&self, ctx: &Context) -> Result<(), Error> {
-		let commands = bot_commands::to_vec();
+	async fn register_commands(&self, ctx: &Context) -> Result<()> {
+		let commands = commands::to_vec();
 		let commands_len = commands.len();
 		for command in commands {
 			Command::create_global_command(&ctx.http, command).await?;
@@ -31,7 +31,7 @@ impl Handler {
 	}
 
 	/// Dispatch our commands from a [`CommandInteraction`]
-	async fn dispatch_command(ctx: &Context, command: &CommandInteraction) -> Result<(), Error> {
+	async fn dispatch_command(ctx: &Context, command: &CommandInteraction) -> Result<()> {
 		let command_name = command.data.name.as_str();
 
 		// grab our configuration & http client from the aether
@@ -39,19 +39,19 @@ impl Handler {
 			let read = ctx.data.read().await;
 			let http = read
 				.get::<SharedHttp>()
-				.ok_or("Couldn't get shared HTTP client! WHY??????")?
+				.ok_or_eyre("Couldn't get shared HTTP client! WHY??????")?
 				.clone();
 			let config = read
 				.get::<SharedConfig>()
-				.ok_or("Couldn't get shared bot configuration!")?
+				.ok_or_eyre("Couldn't get shared bot configuration!")?
 				.clone();
 			(http, config)
 		};
 
 		match command_name {
-			"about" => bot_commands::about::respond(ctx, &http, command).await?,
-			"ping" => bot_commands::ping::respond(ctx, command).await?,
-			"track" => bot_commands::track::respond(ctx, &http, &config, command).await?,
+			"about" => commands::about::respond(ctx, &http, command).await?,
+			"ping" => commands::ping::respond(ctx, command).await?,
+			"track" => commands::track::respond(ctx, &http, &config, command).await?,
 			_ => {
 				let message = CreateInteractionResponseMessage::new().content(format!(
 					"It doesn't look like you can use `{command_name}`. Sorry :("

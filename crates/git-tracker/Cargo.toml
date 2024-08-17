@@ -1,27 +1,17 @@
 [package]
 name = "git-tracker"
-version = "0.2.0"
-edition = "2021"
-
-authors = ["seth <getchoo at tuta dot io>"]
-description = "A library that helps you track commits and branches in a Git repository"
-repository = "https://github.com/getchoo/nixpkgs-tracker-bot"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Library that helps you track commits and branches in a Git repository"
+repository.workspace = true
 
 publish = false
 
 [dependencies]
-git2 = { workspace = true }
-log = { workspace = true }
+git2 = { version = "0.19.0", default-features = false, features = ["https"] }
+log.workspace = true
 thiserror = "1.0.63"
 
-[lints.rust]
-async_fn_in_trait = "allow"
-unsafe_code = "forbid"
-
-[lints.clippy]
-complexity = "warn"
-correctness = "deny"
-pedantic = "warn"
-perf = "warn"
-style = "warn"
-suspicious = "deny"
+[lints]
+workspace = true
