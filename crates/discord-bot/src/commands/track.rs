@@ -71,15 +71,18 @@ where
 
 	// if we don't find the commit in any branches from above, we can pretty safely assume
 	// it's an unmerged PR
-	let embed_description: String = if status_results.is_empty() {
+	let embed_description = if status_results.is_empty() {
 		"It doesn't look like this PR has been merged yet! (or maybe I just haven't updated)"
-			.to_string()
 	} else {
-		status_results
+		let found_branches = status_results
 			.iter()
 			.filter_map(|(branch_name, has_pr)| has_pr.then(|| format!("`{branch_name}` ✅")))
-			.collect::<Vec<String>>()
-			.join("\n")
+			.collect::<Vec<String>>();
+		if found_branches.is_empty() {
+			"This PR has been merged...but I can't seem to find it anywhere. I might not be tracking it's base branch"
+		} else {
+			&found_branches.join("\n")
+		}
 	};
 
 	let embed = CreateEmbed::new()
