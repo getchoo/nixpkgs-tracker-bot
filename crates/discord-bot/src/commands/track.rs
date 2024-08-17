@@ -1,12 +1,17 @@
+use crate::{config::Config, consts::NIXPKGS_REMOTE, http::GitHubClientExt};
+
 use std::sync::Arc;
 
-use crate::{config::Config, consts::NIXPKGS_URL, http::GitHubClientExt};
-
 use eyre::Result;
-use serenity::all::CreateEmbed;
-use serenity::builder::{CreateCommand, CreateCommandOption, CreateInteractionResponseFollowup};
-use serenity::model::application::{
-	CommandInteraction, CommandOptionType, InstallationContext, ResolvedOption, ResolvedValue,
+use log::debug;
+use serenity::builder::{
+	CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponseFollowup,
+};
+use serenity::model::{
+	application::{
+		CommandInteraction, CommandOptionType, InstallationContext, ResolvedOption, ResolvedValue,
+	},
+	Timestamp,
 };
 use serenity::prelude::Context;
 
@@ -32,15 +37,15 @@ where
 	}) = options.first()
 	else {
 		let resp = CreateInteractionResponseFollowup::new()
-			.content("Please provide a valid pull request!");
+			.content("PR numbers aren't negative or that big...");
 		command.create_followup(&ctx, resp).await?;
 
 		return Ok(());
 	};
 
 	let Ok(id) = u64::try_from(*pr) else {
-		let resp =
-			CreateInteractionResponseFollowup::new().content("PR numbers aren't negative...");
+		let resp = CreateInteractionResponseFollowup::new()
+			.content("PR numbers aren't negative or that big...");
 		command.create_followup(&ctx, resp).await?;
 
 		return Ok(());
@@ -55,6 +60,8 @@ where
 
 		return Ok(());
 	}
+
+	// seems older PRs may not have this
 	let Some(commit_sha) = pull_request.merge_commit_sha else {
 		let response = CreateInteractionResponseFollowup::new()
 			.content("It seems this pull request is very old. I can't track it");
@@ -69,26 +76,45 @@ where
 		&config.nixpkgs_branches,
 	)?;
 
-	// if we don't find the commit in any branches from above, we can pretty safely assume
-	// it's an unmerged PR
-	let embed_description = if status_results.is_empty() {
-		"It doesn't look like this PR has been merged yet! (or maybe I just haven't updated)"
-	} else {
-		let found_branches = status_results
-			.iter()
-			.filter_map(|(branch_name, has_pr)| has_pr.then(|| format!("`{branch_name}` ✅")))
-			.collect::<Vec<String>>();
-		if found_branches.is_empty() {
-			"This PR has been merged...but I can't seem to find it anywhere. I might not be tracking it's base branch"
-		} else {
-			&found_branches.join("\n")
-		}
-	};
+	// find branches containing our PR and trim the remote ref prefix
+	let found_branches: Vec<String> = status_results
+		.iter()
+		.filter(|&(_, has_pr)| *has_pr)
+		.map(|(branch_name, _)| {
+			// remove the ref prefix that we add in our Config struct
+			let start_pos = format!("{NIXPKGS_REMOTE}/").len();
+			branch_name[start_pos..].to_string()
+		})
+		.collect();
 
-	let embed = CreateEmbed::new()
-		.title(format!("Nixpkgs PR #{} Status", *pr))
-		.url(format!("{NIXPKGS_URL}/pull/{pr}"))
-		.description(embed_description);
+	// if we didn't find any, bail
+	if found_branches.is_empty() {
+		let response = CreateInteractionResponseFollowup::new()
+			.content("This PR has been merged...but I can't seem to find it anywhere. I might not be tracking it's base branch");
+		command.create_followup(&ctx, response).await?;
+
+		return Ok(());
+	}
+
+	let mut embed = CreateEmbed::new()
+		.title(format!("Nixpkgs PR #{} Status", pull_request.number))
+		.url(&pull_request.html_url)
+		.description(&pull_request.title)
+		.fields(
+			found_branches
+				.iter()
+				.map(|branch_name| (branch_name, "✅", true)),
+		);
+
+	if let Some(merged_at) = pull_request.merged_at {
+		if let Ok(timestamp) = Timestamp::parse(&merged_at) {
+			embed = embed.timestamp(timestamp);
+		} else {
+			debug!("Couldn't parse timestamp from GitHub! Ignoring.");
+		}
+	} else {
+		debug!("Couldn't find `merged_at` information for a supposedly merged PR! Ignoring.");
+	}
 
 	let resp = CreateInteractionResponseFollowup::new().embed(embed);
 	command.create_followup(&ctx, resp).await?;
