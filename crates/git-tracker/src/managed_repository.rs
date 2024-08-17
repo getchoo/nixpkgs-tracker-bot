@@ -50,7 +50,7 @@ impl ManagedRepository {
 
 	/// Update the given branches in the [`repository`] using the nixpkgs remote
 	fn update_branches_in(&self, repository: &Repository) -> Result<(), Error> {
-		let mut remote = repository.find_remote(&self.upstream_remote_url)?;
+		let mut remote = repository.find_remote(&self.upstream_remote_name)?;
 		// download all the refs
 		remote.download(&self.tracked_branches, Some(&mut Self::fetch_options()))?;
 		remote.disconnect()?;
