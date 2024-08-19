@@ -21,7 +21,7 @@ git-tracker.workspace = true
 log.workspace = true
 nixpkgs-tracker-http.workspace = true
 serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
-tokio = { version = "1.39.2", features = [
+tokio = { version = "1.39.3", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal"
