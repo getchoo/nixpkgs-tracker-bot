@@ -1,4 +1,4 @@
-use crate::{config::Config, consts::NIXPKGS_REMOTE, http::GitHubClientExt};
+use crate::{config::Config, http::GitHubClientExt};
 
 use std::sync::Arc;
 
@@ -70,25 +70,18 @@ where
 		return Ok(());
 	};
 
-	let status_results = git_tracker::collect_statuses_in(
-		&config.nixpkgs_path,
-		&commit_sha,
-		&config.nixpkgs_branches,
-	)?;
-
-	// find branches containing our PR and trim the remote ref prefix
-	let found_branches: Vec<String> = status_results
+	let repository = config.repository();
+	let branch_results = repository.branches_contain_sha(config.nixpkgs_branches(), &commit_sha)?;
+	let fields: Vec<_> = branch_results
 		.iter()
-		.filter(|&(_, has_pr)| *has_pr)
-		.map(|(branch_name, _)| {
-			// remove the ref prefix that we add in our Config struct
-			let start_pos = format!("{NIXPKGS_REMOTE}/").len();
-			branch_name[start_pos..].to_string()
+		.map(|(name, has_commit)| {
+			let emoji = if *has_commit { "✅" } else { "❌" };
+			(*name, emoji, true)
 		})
 		.collect();
 
 	// if we didn't find any, bail
-	if found_branches.is_empty() {
+	if fields.is_empty() {
 		let response = CreateInteractionResponseFollowup::new()
 			.content("This PR has been merged...but I can't seem to find it anywhere. I might not be tracking it's base branch");
 		command.create_followup(&ctx, response).await?;
@@ -100,11 +93,7 @@ where
 		.title(format!("Nixpkgs PR #{} Status", pull_request.number))
 		.url(&pull_request.html_url)
 		.description(&pull_request.title)
-		.fields(
-			found_branches
-				.iter()
-				.map(|branch_name| (branch_name, "✅", true)),
-		);
+		.fields(fields);
 
 	if let Some(merged_at) = pull_request.merged_at {
 		if let Ok(timestamp) = Timestamp::parse(&merged_at) {

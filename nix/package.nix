@@ -1,11 +1,13 @@
 {
   lib,
-  rustPlatform,
+  stdenv,
   openssl,
   pkg-config,
+  rustPlatform,
   lto ? true,
   optimizeSize ? false,
 }:
+
 rustPlatform.buildRustPackage {
   pname = "nixpkgs-tracker-bot";
   inherit ((lib.importTOML ../Cargo.toml).workspace.package) version;
@@ -26,28 +28,31 @@ rustPlatform.buildRustPackage {
 
   env =
     let
-      toRustFlags = lib.mapAttrs' (
-        name:
-        lib.nameValuePair "CARGO_BUILD_RELEASE_${
-          lib.toUpper (builtins.replaceStrings [ "-" ] [ "_" ] name)
-        }"
-      );
+      rustFlags =
+        lib.optionalAttrs lto {
+          lto = "thin";
+        }
+        // lib.optionalAttrs optimizeSize {
+          codegen-units = 1;
+          opt-level = "s";
+          panic = "abort";
+          strip = "symbols";
+        };
     in
-    lib.optionalAttrs lto (toRustFlags {
-      lto = "thin";
-    })
-    // lib.optionalAttrs optimizeSize (toRustFlags {
-      codegen-units = 1;
-      opt-level = "s";
-      panic = "abort";
-      strip = "symbols";
-    });
+    {
+      CARGO_BUILD_RUSTFLAGS = toString (
+        lib.mapAttrsToList (name: value: "-C " + lib.toShellVar name value) rustFlags
+      );
+    }
+    // lib.optionalAttrs stdenv.hostPlatform.isStatic {
+      OPENSSL_STATIC = 1;
+    };
 
   meta = {
     description = "A Discord app for tracking nixpkgs pull requests";
     homepage = "https://github.com/getchoo/nixpkgs-tracker-bot";
-    mainProgram = "nixpkgs-tracker-bot";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.getchoo ];
+    mainProgram = "nixpkgs-tracker-bot";
   };
 }
