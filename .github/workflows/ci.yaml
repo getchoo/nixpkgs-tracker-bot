@@ -54,7 +54,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v13
 
       - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v7
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Run build
         run: nix build --print-build-logs --show-trace
