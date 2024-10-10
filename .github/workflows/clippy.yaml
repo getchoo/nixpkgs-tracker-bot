@@ -3,17 +3,23 @@ name: Clippy
 on:
   push:
     paths:
-      - '**.rs'
-      - '.github/workflows/clippy.yaml'
-      - 'Cargo.lock'
-      - 'Cargo.toml'
+      - "**.rs"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "flake.lock"
+      - "flake.nix"
+
+      - ".github/workflows/clippy.yaml"
     branches: [main]
   pull_request:
     paths:
-      - '**.rs'
-      - '.github/workflows/clippy.yaml'
-      - 'Cargo.lock'
-      - 'Cargo.toml'
+      - "**.rs"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "flake.lock"
+      - "flake.nix"
+
+      - ".github/workflows/clippy.yaml"
   workflow_dispatch:
 
 jobs:
