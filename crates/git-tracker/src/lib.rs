@@ -7,6 +7,9 @@ use git2::{
 };
 use log::{debug, info, trace};
 
+/// Used when logging Git transfer progress
+const INCREMENT_TO_LOG: i32 = 5;
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
 	#[error("libgit2 error")]
@@ -64,26 +67,44 @@ impl TrackedRepository {
 		Ok(())
 	}
 
-	#[allow(clippy::cast_precision_loss)]
+	#[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
 	fn fetch_options<'a>() -> FetchOptions<'a> {
 		let mut rc = RemoteCallbacks::new();
 
 		// Log transfer progress
-		rc.transfer_progress(|stats| {
+		let mut current_percentage = 1;
+		rc.transfer_progress(move |stats| {
 			if stats.received_objects() == stats.total_objects() {
-				info!(
-					"Resolving deltas {}/{}\r",
-					stats.indexed_deltas(),
-					stats.total_deltas()
-				);
+				// HACK: Avoid dividing by zero
+				// I have no idea how this can ever be zero but ok
+				let total_deltas = stats.total_deltas();
+				if total_deltas == 0 {
+					return true;
+				}
+
+				let percentage =
+					(stats.indexed_deltas() as f32 / stats.total_deltas() as f32 * 100.0) as i32;
+				if percentage != current_percentage && percentage % INCREMENT_TO_LOG == 0 {
+					info!(
+						"Resolving deltas {}/{}\r",
+						stats.indexed_deltas(),
+						stats.total_deltas()
+					);
+					current_percentage = percentage;
+				}
 			} else if stats.total_objects() > 0 {
-				info!(
-					"Received {}/{} objects ({}) in {} bytes\r",
-					stats.received_objects(),
-					stats.total_objects(),
-					stats.indexed_objects(),
-					stats.received_bytes()
-				);
+				let percentage =
+					(stats.received_objects() as f32 / stats.total_objects() as f32 * 100.0) as i32;
+				if percentage != current_percentage && percentage % INCREMENT_TO_LOG == 0 {
+					info!(
+						"Received {}/{} objects ({}) in {} bytes\r",
+						stats.received_objects(),
+						stats.total_objects(),
+						stats.indexed_objects(),
+						stats.received_bytes()
+					);
+					current_percentage = percentage;
+				}
 			}
 
 			true
