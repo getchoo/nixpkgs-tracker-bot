@@ -105,7 +105,7 @@
           pkgs = nixpkgsFor.${system};
           packages' = self.packages.${system};
 
-          staticWith = pkgs.callPackage ./nix/static.nix { };
+          staticWith = pkgs.callPackage ./nix/static.nix { inherit nix-filter self; };
           containerize = pkgs.callPackage ./nix/containerize.nix { };
         in
         {

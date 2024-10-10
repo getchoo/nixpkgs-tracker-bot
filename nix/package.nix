@@ -44,7 +44,7 @@ rustPlatform.buildRustPackage {
     in
     {
       CARGO_BUILD_RUSTFLAGS = toString (
-        lib.mapAttrsToList (name: value: "-C " + lib.toShellVar name value) rustFlags
+        lib.mapAttrsToList (name: value: "-C ${name}=${toString value}") rustFlags
       );
     }
     // lib.optionalAttrs stdenv.hostPlatform.isStatic {
