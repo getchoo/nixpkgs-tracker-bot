@@ -14,14 +14,14 @@ name = "nixpkgs-tracker-bot"
 path = "src/main.rs"
 
 [dependencies]
-dotenvy = "0.15.7"
-env_logger = "0.11.5"
-eyre = "0.6.12"
+dotenvy = "0.15"
+env_logger = "0.11"
+eyre = "0.6"
 git-tracker.workspace = true
 log.workspace = true
 nixpkgs-tracker-http.workspace = true
-serenity = { version = "0.12.2", features = ["unstable_discord_api"] }
-tokio = { version = "1.40.0", features = [
+serenity = { version = "0.12", features = ["unstable_discord_api"] }
+tokio = { version = "1.40", features = [
 	"macros",
 	"rt-multi-thread",
 	"signal"
