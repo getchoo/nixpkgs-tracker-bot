@@ -4,20 +4,23 @@
   openssl,
   pkg-config,
   rustPlatform,
+
+  self,
+  nix-filter,
   lto ? true,
   optimizeSize ? false,
 }:
 
 rustPlatform.buildRustPackage {
   pname = "nixpkgs-tracker-bot";
-  inherit ((lib.importTOML ../Cargo.toml).workspace.package) version;
+  version = self.shortRev or self.dirtyShortRev or "unknown";
 
-  src = lib.fileset.toSource {
-    root = ../.;
-    fileset = lib.fileset.unions [
-      (lib.fileset.gitTracked ../crates)
-      ../Cargo.toml
-      ../Cargo.lock
+  src = nix-filter.lib.filter {
+    root = self;
+    include = [
+      "crates"
+      "Cargo.toml"
+      "Cargo.lock"
     ];
   };
 
