@@ -9,9 +9,9 @@ repository.workspace = true
 publish = false
 
 [dependencies]
-git2 = { version = "0.19.0", default-features = false, features = ["https"] }
+git2 = { version = "0.19", default-features = false, features = ["https"] }
 log.workspace = true
-thiserror = "1.0.64"
+thiserror = "1.0"
 
 [lints]
 workspace = true

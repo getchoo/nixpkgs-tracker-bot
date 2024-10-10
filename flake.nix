@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
+    nix-filter.url = "github:numtide/nix-filter";
+
     # Inputs below this are optional
     # `inputs.treefmt-nix.follows = ""`
 
@@ -17,6 +19,7 @@
     {
       self,
       nixpkgs,
+      nix-filter,
       treefmt-nix,
     }:
     let
@@ -102,11 +105,11 @@
           pkgs = nixpkgsFor.${system};
           packages' = self.packages.${system};
 
-          staticWith = pkgs.callPackage ./nix/static.nix { };
+          staticWith = pkgs.callPackage ./nix/static.nix { inherit nix-filter self; };
           containerize = pkgs.callPackage ./nix/containerize.nix { };
         in
         {
-          nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix { };
+          nixpkgs-tracker-bot = pkgs.callPackage ./nix/package.nix { inherit nix-filter self; };
 
           default = packages'.nixpkgs-tracker-bot;
 

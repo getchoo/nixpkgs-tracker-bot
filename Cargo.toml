@@ -15,7 +15,7 @@ license = "MIT"
 git-tracker = { path = "./crates/git-tracker" }
 nixpkgs-tracker-http = { path = "./crates/nixpkgs-tracker-http" }
 
-log = "0.4.22"
+log = "0.4"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

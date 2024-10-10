@@ -6,7 +6,6 @@ use serenity::prelude::{Client, GatewayIntents, TypeMapKey};
 
 mod commands;
 mod config;
-mod consts;
 mod handler;
 mod jobs;
 
@@ -76,7 +75,7 @@ pub async fn client() -> Result<Client> {
 	});
 
 	// run our jobs
-	jobs::dispatch(config)?;
+	jobs::dispatch(&config)?;
 
 	Ok(client)
 }
