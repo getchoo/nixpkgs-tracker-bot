@@ -1,11 +1,13 @@
 use crate::{config::Config, http::GitHubClientExt};
 
 use std::sync::Arc;
+use std::time::Instant;
 
 use eyre::Result;
 use log::debug;
 use serenity::builder::{
-	CreateCommand, CreateCommandOption, CreateEmbed, CreateInteractionResponseFollowup,
+	CreateCommand, CreateCommandOption, CreateEmbed, CreateEmbedFooter,
+	CreateInteractionResponseFollowup,
 };
 use serenity::model::{
 	application::{
@@ -71,7 +73,9 @@ where
 	};
 
 	let repository = config.repository();
+	let timer = Instant::now();
 	let branch_results = repository.branches_contain_sha(config.nixpkgs_branches(), &commit_sha)?;
+	let branch_check_time = timer.elapsed();
 	let fields: Vec<_> = branch_results
 		.iter()
 		.map(|(name, has_commit)| {
@@ -93,7 +97,11 @@ where
 		.title(format!("Nixpkgs PR #{} Status", pull_request.number))
 		.url(&pull_request.html_url)
 		.description(&pull_request.title)
-		.fields(fields);
+		.fields(fields)
+		.footer(CreateEmbedFooter::new(format!(
+			"Completed in {}ms",
+			branch_check_time.as_millis()
+		)));
 
 	if let Some(merged_at) = pull_request.merged_at {
 		if let Ok(timestamp) = Timestamp::parse(&merged_at) {
