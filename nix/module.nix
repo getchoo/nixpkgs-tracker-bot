@@ -50,7 +50,7 @@ in
 
       environment = {
         # using `/var/lib/private` as we have `DynamicUser` enabled
-        BOT_NIXPKGS_PATH = "/var/lib/private/${config.systemd.services.nixpkgs-tracker-bot.serviceConfig.StateDirectory}/nixpkgs";
+        BOT_NIXPKGS_PATH = "%S/${config.systemd.services.nixpkgs-tracker-bot.serviceConfig.StateDirectory}/nixpkgs";
       };
 
       serviceConfig = {
