@@ -159,12 +159,15 @@ impl TrackedRepository {
 	///
 	/// Will return [`Err`] if the repository cannot be opened, HEAD cannot be resolved, or the
 	/// relation between commits cannot be resolved
-	pub fn ref_contains_object(&self, reference: &Reference, commit: Oid) -> Result<bool, Error> {
+	pub fn ref_contains_object(
+		repository: &Repository,
+		reference: &Reference,
+		commit: Oid,
+	) -> Result<bool, Error> {
 		trace!(
 			"Checking for commit {commit} in {}",
 			reference.name().unwrap_or("<branch>")
 		);
-		let repository = self.open()?;
 		let head = reference.peel_to_commit()?;
 
 		// NOTE: we have to check this as `Repository::graph_descendant_of()` (like the name says)
@@ -201,7 +204,8 @@ impl TrackedRepository {
 				BranchType::Remote,
 			)?;
 
-			let has_commit = self.ref_contains_object(&branch.into_reference(), commit)?;
+			let has_commit =
+				Self::ref_contains_object(&repository, &branch.into_reference(), commit)?;
 			results.push((branch_name, has_commit));
 		}
 
