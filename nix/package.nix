@@ -3,6 +3,7 @@
   stdenv,
   openssl,
   pkg-config,
+  removeReferencesTo,
   rustPlatform,
 
   self,
@@ -26,14 +27,28 @@ rustPlatform.buildRustPackage {
 
   cargoLock.lockFile = ../Cargo.lock;
 
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [
+    pkg-config
+    removeReferencesTo
+  ];
+
   buildInputs = [ openssl ];
+
+  # `-C panic="abort"` breaks checks
+  doCheck = !optimizeSize;
+
+  postFixup = lib.optionalString stdenv.hostPlatform.isStatic ''
+    find "$out" \
+      -type f \
+      -exec remove-references-to -t ${stdenv.cc.libc} -t ${openssl.dev} '{}' +
+  '';
 
   env =
     let
       rustFlags =
         lib.optionalAttrs lto {
           lto = "thin";
+          embed-bitcode = "yes";
         }
         // lib.optionalAttrs optimizeSize {
           codegen-units = 1;
@@ -43,9 +58,7 @@ rustPlatform.buildRustPackage {
         };
     in
     {
-      CARGO_BUILD_RUSTFLAGS = toString (
-        lib.mapAttrsToList (name: value: "-C ${name}=${toString value}") rustFlags
-      );
+      RUSTFLAGS = toString (lib.mapAttrsToList (name: value: "-C ${name}=${toString value}") rustFlags);
     }
     // lib.optionalAttrs stdenv.hostPlatform.isStatic {
       OPENSSL_STATIC = 1;
