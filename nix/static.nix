@@ -1,6 +1,5 @@
 {
   pkgsCross,
-  nix-filter,
   self,
 }:
 
@@ -15,8 +14,9 @@ in
 let
   crossPkgs = crossPkgsFor.${arch};
 in
+
 (crossPkgs.callPackage ./package.nix {
-  inherit nix-filter self;
+  inherit self;
   optimizeSize = true;
 }).overrideAttrs
   (old: {

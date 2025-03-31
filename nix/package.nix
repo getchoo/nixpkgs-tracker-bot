@@ -7,7 +7,6 @@
   rustPlatform,
 
   self,
-  nix-filter,
   lto ? true,
   optimizeSize ? false,
 }:
@@ -16,12 +15,13 @@ rustPlatform.buildRustPackage {
   pname = "nixpkgs-tracker-bot";
   version = self.shortRev or self.dirtyShortRev or "unknown";
 
-  src = nix-filter.lib.filter {
-    root = self;
-    include = [
-      "crates"
-      "Cargo.toml"
-      "Cargo.lock"
+  src = lib.fileset.toSource {
+    root = ../.;
+    fileset = lib.fileset.unions [
+      ../Cargo.lock
+      ../Cargo.toml
+
+      ../crates
     ];
   };
 
