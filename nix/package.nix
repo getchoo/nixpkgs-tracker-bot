@@ -11,9 +11,27 @@
   optimizeSize ? false,
 }:
 
+let
+  inherit (self) lastModifiedDate;
+  date =
+    let
+      year = lib.substring 0 4 lastModifiedDate;
+      month = lib.substring 4 2 lastModifiedDate;
+      day = lib.substring 6 2 lastModifiedDate;
+    in
+    if (self ? "lastModifiedDate") then
+      lib.concatStringsSep "-" [
+        year
+        month
+        day
+      ]
+    else
+      "0";
+in
+
 rustPlatform.buildRustPackage {
   pname = "nixpkgs-tracker-bot";
-  version = self.shortRev or self.dirtyShortRev or "unknown";
+  version = "0.2.0-unstable-${date}";
 
   src = lib.fileset.toSource {
     root = ../.;
@@ -65,7 +83,7 @@ rustPlatform.buildRustPackage {
     };
 
   meta = {
-    description = "A Discord app for tracking nixpkgs pull requests";
+    description = "Discord app for tracking Nixpkgs pull requests";
     homepage = "https://github.com/getchoo/nixpkgs-tracker-bot";
     license = lib.licenses.mit;
     maintainers = [ lib.maintainers.getchoo ];
