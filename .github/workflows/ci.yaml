@@ -53,10 +53,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-
-      - name: Setup Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: cachix/install-nix-action@v31
 
       - name: Run build
         run: nix build --print-build-logs --show-trace
@@ -71,11 +68,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
+        uses: cachix/install-nix-action@v31
 
       - name: Run check
         run: |
-          nix fmt -- --fail-on-change
+          find . -type f -name '*.nix' -exec nix fmt -- --fail-on-change {} +
 
   release-gate:
     name: CI Release gate
