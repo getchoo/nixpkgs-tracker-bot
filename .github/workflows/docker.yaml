@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -55,7 +55,7 @@ jobs:
           echo "path=$(readlink -f ./result)" >> "$GITHUB_OUTPUT"
 
       - name: Upload image
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: container-${{ matrix.arch }}
           path: ${{ steps.build.outputs.path }}
@@ -94,15 +94,15 @@ jobs:
           echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download images
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: images
 
       - name: Login to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.USERNAME }}
